@@ -236,8 +236,8 @@ ifdef USE_WW3
 endif
 
 ifdef USE_MCT
-       MCT_INCDIR ?= /opt/intelsoft/mct/include
-       MCT_LIBDIR ?= /opt/intelsoft/mct/lib
+       MCT_INCDIR ?= /nobackup/sdurski/COAWST_ocean_current_coupling/Lib/include
+       MCT_LIBDIR ?= /nobackup/sdurski/COAWST_ocean_current_coupling/Lib/lib
            FFLAGS += -I$(MCT_INCDIR)
              LIBS += -L$(MCT_LIBDIR) -lmct -lmpeu
            INCDIR += $(MCT_INCDIR) $(INCDIR)

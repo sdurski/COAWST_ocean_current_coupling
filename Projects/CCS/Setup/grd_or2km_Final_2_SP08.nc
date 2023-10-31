@@ -1,0 +1,1 @@
+/nobackup/sdurski/CCS_COAWST/Projects/CCS/Setup/grd_or2km_Final_2_SP08.nc

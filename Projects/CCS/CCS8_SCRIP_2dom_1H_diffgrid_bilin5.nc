@@ -1,0 +1,1 @@
+../../../CCS_COAWST/Projects/CCS/CCS8_SCRIP_2dom_1H_diffgrid_bilin5.nc
