@@ -39,16 +39,16 @@
 
    NnodesATM =  110                    ! atmospheric model
    NnodesWAV =  1                    ! wave model
-   NnodesOCN =  32                    ! ocean model
+   NnodesOCN =  32                     ! ocean model
 
 ! Time interval (seconds) between coupling of models.
 
   TI_ATM2WAV =   360.0d0              ! atmosphere to wave coupling interval
-  TI_ATM2OCN =   360.0d0              ! atmosphere to ocean coupling interval
+  TI_ATM2OCN =   3600.0d0              ! atmosphere to ocean coupling interval
   TI_WAV2ATM =   360.0d0              ! wave to atmosphere coupling interval
   TI_WAV2OCN =   360.0d0              ! wave to ocean coupling interval
   TI_OCN2WAV =   360.0d0              ! ocean to wave coupling interval
-  TI_OCN2ATM =   360.0d0              ! ocean to atmosphere coupling interval
+  TI_OCN2ATM =   3600.0d0              ! ocean to atmosphere coupling interval
 
 ! Enter names of Atm, Wav, and Ocn input files.
 ! The Wav program needs multiple input files, one for each grid.

@@ -319,15 +319,15 @@ endef
 
 ifdef EXEC
  ifdef USE_DEBUG
-    BIN ?= $(BINDIR)/coawstG
+    BIN ?= $(BINDIR)/coawstGt
  else
    ifdef USE_MPI
-     BIN ?= $(BINDIR)/coawstM
+     BIN ?= $(BINDIR)/coawstMt
   else
     ifdef USE_OpenMP
-      BIN ?= $(BINDIR)/coawstO
+      BIN ?= $(BINDIR)/coawstOt
    else
-      BIN ?= $(BINDIR)/coawstS
+      BIN ?= $(BINDIR)/coawstSt
    endif
   endif
  endif
@@ -717,7 +717,7 @@ endif
 wrfclean:
 ifdef USE_WRF
 	cd $(WRF_DIR); ls; ./clean -a;                            \
-	./configure;                                              \
+	./configure -d;                                              \
 	echo " "; echo " ";                                       \
 	echo "cleaned wrf";
 endif

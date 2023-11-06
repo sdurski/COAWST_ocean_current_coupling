@@ -42,8 +42,9 @@ DA_CONVERTOR_MODULES = $(DA_CONVERTOR_MOD_DIR) $(INCLUDE_MODULES)
 #### 3.d.   add macros to specify the modules for this core
 
 #jcw
-MCT_INCDIR ?= /usr/local/mct/include
-MCT_MODULES = -I$(MCT_INCDIR)
+MCT_INCDIR ?= /nobackup/sdurski/COAWST_ocean_current_coupling/Build_tmp
+MCT_ALSO_INCDIR ?= /nobackup/sdurski/COAWST_ocean_current_coupling/Lib/MCT/mct
+MCT_MODULES = -I$(MCT_INCDIR) -I$(MCT_ALSO_INCDIR)
 ALL_MODULES =                           \
                $(EM_MODULE_DIR)         \
                $(INCLUDE_MODULES)       \

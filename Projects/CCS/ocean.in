@@ -96,7 +96,7 @@ GridsInLayer =  1
            N ==  40           ! Number of vertical levels
           ND ==   0           ! Number of wave directional bins
 
-        Nbed =  1             ! Number of sediment bed layers
+        Nbed =  0             ! Number of sediment bed layers
 
          NAT =  2             ! Number of active tracers (usually, 2)
          NPT =  0             ! Number of inactive passive tracers
@@ -110,6 +110,12 @@ GridsInLayer =  1
       NtileI == 4                               ! I-direction partition
       NtileJ == 8                               ! J-direction partition
 
+   Hadvection == U3       \                     ! temperature
+                 U3                              ! salinity
+   Vadvection == C4       \                     ! temperature
+                 C4                             ! salinity
+
+!
 ! Set lateral boundary conditions keyword. Notice that a value is expected
 ! for each boundary segment per nested grid for each state variable.
 !
@@ -233,6 +239,7 @@ ad_VolCons(north) ==  F                            ! northern boundary
        ERend =  1
       Nouter =  1
       Ninner =  1
+     Nsaddle =  1
   Nintervals =  1
 
 ! Number of eigenvalues (NEV) and eigenvectors (NCV) to compute for the
@@ -263,6 +270,8 @@ ad_VolCons(north) ==  F                            ! northern boundary
       NTSDIA == 1
         NDIA == 480
      NDEFDIA == 480
+        NQCK = 0
+     NDEFQCK = 0
 
 ! Output tangent linear and adjoint models parameters.
 
@@ -321,9 +330,19 @@ LtracerSponge == T T                            ! temperature, salinity, inert
 ! Vertical mixing coefficient for momentum for nonlinear model and
 ! basic state scale factor in adjoint-based algorithms: [Ngrids].
 
-     AKV_BAK == 1.0d-5  1.0d-5                  ! m2/s
+     AKV_BAK == 1.0d-5                          ! m2/s
 
   ad_AKV_fac == 1.0d0                           ! nondimensional
+
+! Upper threshold values to limit vertical mixing coefficients computed
+! from vertical mixing parameterizations. Although this is an engineering
+! fix, the vertical mixing values inferred from ocean observations are
+! rarely higher than this upper limit value.
+! CSD changed from 1e-3.  The above comment really needs to be rewritten
+! CSD given that people can change the value below.
+   AKT_LIMIT == 1.0d-1 1.0d-1                   ! m2/s
+
+   AKV_LIMIT == 1.0d-1                          ! m2/s
 
 ! Turbulent closure parameters.
 
@@ -359,15 +378,15 @@ LtracerSponge == T T                            ! temperature, salinity, inert
 
 ! Constants used in momentum stress computation.
 
-        RDRG == 3.0d-04                    ! m/s
+        RDRG == 0.0d-04                    ! m/s
        RDRG2 == 2.5d-03                    ! nondimensional
          Zob == 0.01d0                     ! m
          Zos == 0.02d0                     ! m
 
 ! Height (m) of atmospheric measurements for Bulk fluxes parameterization.
 
-      BLK_ZQ ==  2.0d0                     ! air humidity
-      BLK_ZT ==  2.0d0                     ! air temperature
+      BLK_ZQ == 2.0d0                     ! air humidity
+      BLK_ZT == 2.0d0                     ! air temperature
       BLK_ZW == 10.0d0                     ! winds
 
 ! Minimum depth for wetting and drying.
@@ -408,7 +427,7 @@ LtracerSponge == T T                            ! temperature, salinity, inert
 ! Nudging/relaxation time scales, inverse scales will be computed
 ! internally, [1:Ngrids].
 
-       TNUDG == 3.0d0  3.0d0  3.0d0        ! days
+       TNUDG == 3.0d0  3.0d0      ! days
        ZNUDG == 3.0d0                      ! days
       M2NUDG == 3.0d0                      ! days
       M3NUDG == 3.0d0                      ! days
@@ -919,12 +938,12 @@ Dout(iTvdif) == F F     ! temp_vdiff, ...    vertical diffusion
 ! Output NetCDF file names, [1:Ngrids].
 
      GSTNAME == CCS_output/ocean_gst.nc
-     RSTNAME == CCS_output/ocean_CCS8_mynn_chk1_rst.nc 
-     HISNAME == CCS_output/ocean_CCS8_mynn_chk1_his.nc
+     RSTNAME == CCS_output/ocean_CCS8_mynn_base_rst.nc 
+     HISNAME == CCS_output/ocean_CCS8_mynn_base_his.nc
      TLMNAME == CCS_output/ocean_tlm.nc
      TLFNAME == CCS_output/ocean_tlf.nc
      ADJNAME == CCS_output/ocean_adj.nc
-     AVGNAME == CCS_output/ocean_CCS8_mynn_chk1_avg.nc
+     AVGNAME == CCS_output/ocean_CCS8_mynn_base_avg.nc
      DIANAME == CCS_output/ocean_dia.nc
      STANAME == CCS_output/ocean_sta.nc
      FLTNAME == CCS_output/ocean_flt.nc

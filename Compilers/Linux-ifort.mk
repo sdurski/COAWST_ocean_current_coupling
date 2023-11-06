@@ -77,6 +77,7 @@ ifdef USE_ROMS
            FFLAGS += -check uninit
 #          FFLAGS += -warn interfaces,nouncalled -gen-interfaces
            FFLAGS += -gen-interfaces
+           FFLAGS += -O0
  else
            FFLAGS += -ip -O3
            FFLAGS += -traceback

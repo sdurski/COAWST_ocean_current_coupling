@@ -219,7 +219,7 @@ export              FORT=ifort
 #export              FORT=gfortran
 #export              FORT=pgi
 
- export         USE_DEBUG=              # use Fortran debugging flags
+ export         USE_DEBUG=on              # use Fortran debugging flags
  export         USE_LARGE=on            # activate 64-bit compilation
 
 #--------------------------------------------------------------------------
@@ -354,9 +354,11 @@ export WRF_DIR=${MY_ROMS_SRC}/WRF
 export WRFHYDRO_DIR=${MY_ROMS_SRC}/WRF/hydro_v5.0
 
 # first go to make some coupler files
-if [ $clean -eq 1 ] && [ $cleanwrf -eq 1 ] && [ $cleanwrfhydro -eq 1 ] && [ $cleanww3 -eq 1 ]  && [ $cleanswan -eq 1 ]; then
+# !CSD I'm finding cases where it makes mct_params, but then wipes them out where they are built,
+# ! but later needed ..so maybe always make mct_params? ....if we do, compilation takes a lot longer
+#if [ $clean -eq 1 ] && [ $cleanwrf -eq 1 ] && [ $cleanwrfhydro -eq 1 ] && [ $cleanww3 -eq 1 ]  && [ $cleanswan -eq 1 ]; then
   make mct_params
-fi
+#fi
   cd ${SCRATCH_DIR}
   export MCT_PARAMS_DIR=${PWD}
   cd ${MY_ROMS_SRC}

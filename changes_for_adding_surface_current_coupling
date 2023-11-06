@@ -1,0 +1,15 @@
+This is a rewrite of the changes I made to an earlier version of COAWST for surface current coupling. 
+Here I am trying to 
+
+1. Re-implement the changes I made to that old version into the latest version of themodel system
+2. Do so in a cleaner way so that the changes aren't too explicitly ties to MCT. 
+
+We define a cpp option  OC_SUV_2AT to indicate that we will be sharing ocean 'surface' u- and v= velocities fields with the atmospheric model. 
+
+We are going to implement a number of approximations of the surface current that we are using for the coupling.  These inclide
+OC_SUVN_2AT  - send the level N u- and v- fields 
+OC_SUVZ_2AT  - send depth averaged surface velocity over the top 10 meters of the water column, or top grid point velocity if the k=N velocity points are deeper than 10m
+OC_SUVG_2AT  - send an approximation of the geostrophic surface velocity determined from the sea surface slope.
+OC_SUVGOA_2AT - send an approximation of the geostrophic surface velocity as above, but combine with information on the atmospheric surface geostrophic velocity
+OC_SUVK_2AT   - send a surface ekman layer estimate of relevant velocity, that's a function of the k=N velocity components 
+OC_SUVK_2AT   - send a surface ekman layer estimate of relevant velocity, that is a function of the surface geostrophic velocity. 

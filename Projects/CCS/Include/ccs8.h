@@ -35,7 +35,6 @@
 # undef TS_MPDATA
 # undef TS_FIXED
 # define ANA_SPONGE
-# define MILD_SPONGE
 
 # undef SSW_BBL
 # ifdef SSW_BBL

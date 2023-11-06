@@ -465,6 +465,18 @@
       cad=LEN_TRIM(to_add)
       write(oastring(cid:cid+cad-1),'(a)') to_add(1:cad)
       cid=cid+cad
+#if defined OC_SUV_2AT 
+!CSD add data strings for surface u and v.
+      to_add=':UOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(oastring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+      to_add=':VOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(oastring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+#endif
+!
 !
 #ifdef MCT_INTERP_OC2AT
       to_add=':CPL_MASK'
@@ -628,7 +640,8 @@
       USE mod_scalars
       USE mod_stepping
       USE mod_iounits
-#if defined CURVGRID || defined MASKING
+!CSD We would need the angle variable anytime currents are being passed between models as well.
+#if defined CURVGRID || defined MASKING || defined OC_SUV_2AT    
       USE mod_grid
 #endif
       USE exchange_2d_mod, ONLY : exchange_r2d_tile
@@ -689,6 +702,45 @@
       END DO
       CALL AttrVect_importRAttr (AttrVect_G(ng)%ocn2atm_AV, "SST", A,   &
      &                           Asize)
+#ifdef OC_SUV_2AT
+!------------------------------------------------------------------------
+!
+!  surface u- velocity estimate      (m s^-1)
+!
+!
+      ij=0
+      DO j=JstrR,JendR
+        DO i=IstrR,IendR
+          ij=ij+1
+          OCEAN(ng)%u_caw(i,j)=0.5_r8*(OCEAN(ng)%u(i  ,j,N(ng),nstp(ng))+   &
+     &                   OCEAN(ng)%u(i+1,j,N(ng),nstp(ng)))  
+          OCEAN(ng)%v_caw(i,j)=0.5_r8*(OCEAN(ng)%v(i,j,N(ng),nstp(ng))+     &
+     &                   OCEAN(ng)%v(i,j+1,N(ng),nstp(ng))) 
+          A(ij)=OCEAN(ng)%u_caw(i,j)*GRID(ng)%CosAngler(i,j) -          &
+     &          OCEAN(ng)%v_caw(i,j)*GRID(ng)%SinAngler(i,j)  
+        END DO
+      END DO
+#endif
+
+#if defined OC_SUV_2AT 
+      CALL AttrVect_importRAttr (AttrVect_G(ng)%ocn2atm_AV, "UOCEAN", A,   &
+     &                           Asize)
+#endif
+
+#ifdef OC_SUV_2AT
+      ij=0
+      DO j=JstrR,JendR
+        DO i=IstrR,IendR
+          ij=ij+1
+          A(ij)=OCEAN(ng)%v_caw(i,j)*GRID(ng)%CosAngler(i,j) +          &
+     &          OCEAN(ng)%u_caw(i,j)*GRID(ng)%SinAngler(i,j)  
+        END DO
+      END DO
+#endif
+#if defined OC_SUV_2AT 
+      CALL AttrVect_importRAttr (AttrVect_G(ng)%ocn2atm_AV, "VOCEAN", A,   &
+     &                           Asize)
+#endif
 !
 !  Send ocean fields to atmosphere model.
 !

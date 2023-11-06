@@ -1,0 +1,101 @@
+As a first step we add the OC_SUV_2AT option. This option passes the top grid level u- and v- velocities from ROMS to WRF
+Because this is sort of a re-application of changes made to an earlier version of COAWST, in several places we are implementing changes that affect other OC_SUV* options.
+
+The only routine in this directory that I made changes to is mct_roms_wrf.h
+
+1. Add data strings for UOCEAN and VOCEAN
+#if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVGOA_2AT \ 
+                       || defined OC_SUVZ_2AT || defined OC_SUVK_2AT  \
+                       || defined OC_SUVGK_2AT
+!CSD add data strings for surface u and v.
+      to_add=':UOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(oastring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+      to_add=':VOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(oastring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+#endif
+
+2. Make sure angle variable is available in case grids between models are rotated.
+!CSD We would need the angle variable anytime currents are being passed between models as well.
+#if defined CURVGRID || defined MASKING || defined OC_SUV_2AT   \ 
+                     || defined OC_SUVG_2AT || defined OC_SUVGOA_2AT \
+                     || defined OC_SUVZ_2AT || defined OC_SUVK_2AT  \
+                     || defined OC_SUVGK_2AT
+      USE mod_grid
+#endif
+
+3. NOTED but not changed (see commented out code):  I and J loop bounds when specifying the A vector for sst. I found that for a doubly periodic 1-dimensional domain temperature values were ending up in the passed surface current field.
+
+!CSD for my "1-D" doubly periodic case, the following loop
+!CSD erroneously fills in the first LmxMm values of A with 
+!CSD the surface temperature values at i=1:Lm, j=1:Mm.  But
+!CSD the A vector is of length LxM, so the remaining SST values are 
+!CSD left as zeros.  I don't see a problem with letting this loop
+!CSD fill in the entire A vector with values of SST from (0:L,0:M).
+!CSD from what I can tell this would align properly with the
+!CSD weights in scrip_coast.  The original procedure here, caused
+!CSD problems mapping to wrf in my experience, because it misplaced 
+!CSD elements of the A array and left others blank.
+!CSD but this 'correction' presents problems with going beyond the
+!CSD array bounds in a typical non-periodic domain so for that case
+!CSD I  can revert to the original array limits... 
+!CSD Array sizes are IstrR(-2):IendR(+2), JstrR(-2):JendR(+2), but Asize is dimensioned 
+!CSD (IstrR:IendR)x(JstrR:JendR).   
+ 
+! CSD for the periodic case
+!CSD      DO j=JstrR-1,JendR+1
+!CSD        DO i=IstrR-1,IendR+1
+ 
+4. Form the surface UOCEAN velocity to be passed to WRF, We use u- and v- components along with the grid orientation.
+#ifdef OC_SUV_2AT
+          OCEAN(ng)%u_caw(i,j)=0.5_r8*(OCEAN(ng)%u(i  ,j,N(ng),nstp(ng))+   &
+     &                   OCEAN(ng)%u(i+1,j,N(ng),nstp(ng)))  
+          OCEAN(ng)%v_caw(i,j)=0.5_r8*(OCEAN(ng)%v(i,j,N(ng),nstp(ng))+     &
+     &                   OCEAN(ng)%v(i,j+1,N(ng),nstp(ng))) 
+          A(ij)=OCEAN(ng)%u_caw(i,j)*GRID(ng)%CosAngler(i,j) -          &
+     &          OCEAN(ng)%v_caw(i,j)*GRID(ng)%SinAngler(i,j)  
+#endif
+#if defined OC_SUV_2AT || defined OC_SUVG_2AT      \ 
+                       || defined OC_SUVZ_2AT || defined OC_SUVGOA_2AT  \
+                       || defined OC_SUVK_2AT || defined OC_SUVGK_2AT
+      CALL AttrVect_importRAttr (AttrVect_G(ng)%ocn2atm_AV, "UOCEAN", A,   &
+     &                           Asize)
+#endif
+
+#ifdef OC_SUV_2AT
+          A(ij)=(0.5_r8*(OCEAN(ng)%v(i,j  ,N(ng),nstp(ng))+                 &
+     &                   OCEAN(ng)%v(i,j+1,N(ng),nstp(ng)))                 &
+     &                  *GRID(ng)%CosAngler(i,j)) +                         &
+     &          (0.5_r8*(OCEAN(ng)%u(i  ,j,N(ng),nstp(ng))+                 &
+     &                   OCEAN(ng)%u(i+1,j,N(ng),nstp(ng)))                 &
+     &                  *GRID(ng)%SinAngler(i,j)) 
+#endif
+
+
+#if defined OC_SUV_2AT || defined OC_SUVG_2AT      \ 
+                       || defined OC_SUVZ_2AT || defined OC_SUVGOA_2AT  \
+                       || defined OC_SUVK_2AT || defined OC_SUVGK_2AT
+      CALL AttrVect_importRAttr (AttrVect_G(ng)%ocn2atm_AV, "VOCEAN", A,   &
+     &                           Asize)
+#endif
+
+
+5. I have an odd note which I have not implemented in the latest version of COAWST
+Related to NaNs in the A array. I do not recall exactly what the issue was or if this was only a diagnostic.   But I will note it here in case it comes up again
+
+!CSD as a temporary work-around to deal with some NaN's that are coming from 
+!CSD WRF solar radiation estimate let's try to check for them using an IEEE intrinsic
+!CSD      USE, INTRINSIC :: IEEE_ARITHMETIC
+!
+            cff=A(ij)
+          else
+            cff=0.0_r8
+          end if 
+!CSD check for Nan'sv ..in our CCS simulation they pop up hear but not in other
+!CSD fields, which suggests to me it's a WRF thing. (not quite proper way to check
+!CSD for Nans since a clever compiler might optimize out the ruse above, but  
+!CSD the fortran2003 function ieee_is_nan() requires more 'expensive' compiler switches to be set.)
+ 
