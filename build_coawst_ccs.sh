@@ -219,7 +219,7 @@ export              FORT=ifort
 #export              FORT=gfortran
 #export              FORT=pgi
 
- export         USE_DEBUG=on              # use Fortran debugging flags
+ export         USE_DEBUG=              # use Fortran debugging flags
  export         USE_LARGE=on            # activate 64-bit compilation
 
 #--------------------------------------------------------------------------

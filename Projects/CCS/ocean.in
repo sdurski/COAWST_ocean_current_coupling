@@ -938,12 +938,12 @@ Dout(iTvdif) == F F     ! temp_vdiff, ...    vertical diffusion
 ! Output NetCDF file names, [1:Ngrids].
 
      GSTNAME == CCS_output/ocean_gst.nc
-     RSTNAME == CCS_output/ocean_CCS8_mynn_base_rst.nc 
-     HISNAME == CCS_output/ocean_CCS8_mynn_base_his.nc
+     RSTNAME == CCS_output/ocean_CCS8_ysu_suvN_rst.nc 
+     HISNAME == CCS_output/ocean_CCS8_ysu_suvN_his.nc
      TLMNAME == CCS_output/ocean_tlm.nc
      TLFNAME == CCS_output/ocean_tlf.nc
      ADJNAME == CCS_output/ocean_adj.nc
-     AVGNAME == CCS_output/ocean_CCS8_mynn_base_avg.nc
+     AVGNAME == CCS_output/ocean_CCS8_ysu_suvN_avg.nc
      DIANAME == CCS_output/ocean_dia.nc
      STANAME == CCS_output/ocean_sta.nc
      FLTNAME == CCS_output/ocean_flt.nc

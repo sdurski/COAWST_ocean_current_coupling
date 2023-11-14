@@ -149,6 +149,10 @@
           real(r8), pointer :: Wi(:,:,:)
 # endif
           real(r8), pointer :: wvel(:,:,:)
+# if defined OC_SUV_2AT 
+      real(r8), pointer :: u_caw(:,:)
+      real(r8), pointer :: v_caw(:,:)
+# endif
 
 # ifdef NEMURO_SED1
           real(r8), pointer :: PONsed(:,:)
@@ -514,6 +518,13 @@
 
       allocate ( OCEAN(ng) % wvel(LBi:UBi,LBj:UBj,0:N(ng)) )
       Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
+
+# if defined OC_SUV_2AT 
+      allocate (OCEAN(ng) % u_caw(LBi:UBi,LBj:UBj) )
+      allocate (OCEAN(ng) % v_caw(LBi:UBi,LBj:UBj) )
+# endif
+
+
 # ifdef NEMURO_SED1
       ! Add a 2D array for sediment pools
       allocate ( OCEAN(ng) % PONsed(LBi:UBi,LBj:UBj) )
@@ -1657,6 +1668,11 @@
             OCEAN(ng) % qsp(i,j) = IniVal
             OCEAN(ng) % bh(i,j) = IniVal
 #endif
+# if defined OC_SUV_2AT
+            OCEAN(ng) % u_caw(i,j) = IniVal
+            OCEAN(ng) % v_caw(i,j) = IniVal
+# endif
+
 #if defined WEC
 # ifdef WEC_MELLOR
             OCEAN(ng) % rulag2d(i,j) = IniVal

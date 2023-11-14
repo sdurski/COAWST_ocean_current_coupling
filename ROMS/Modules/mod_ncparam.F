@@ -328,6 +328,7 @@
       integer  :: idUbtf        ! 2D U-velocity impulse forcing
       integer  :: idUbur        ! bottom U-velocity above bed
       integer  :: idUbws        ! bottom U-wave stress
+      integer  :: idUcaw        ! Surf. layer est. of u-vel for atm. coupling
       integer  :: idUclm        ! 3D U-velocity climatology
       integer  :: idUfx1        ! time averaged U-flux for 2D
       integer  :: idUfx2        ! time averaged U-flux for 3D
@@ -364,6 +365,7 @@
       integer  :: idVbtf        ! 2D V-velocity impulse forcing
       integer  :: idVbvr        ! bottom V-velocity above bed
       integer  :: idVbws        ! bottom V-wave stress
+      integer  :: idVcaw        ! Surf. layer est. of v-vel for atm. coupling
       integer  :: idVclm        ! 3D V-velocity climatology
       integer  :: idVfx1        ! 2D momentum time-averaged V-flux
       integer  :: idVfx2        ! 3D momentum time-averaged V-flux
@@ -1533,6 +1535,10 @@
             idVbms=varid
           CASE ('idUbws')
             idUbws=varid
+          CASE ('idUcaw')
+            idUcaw=varid
+          CASE ('idVcaw')
+            idVcaw=varid
           CASE ('idUbcs')
             idUbcs=varid
           CASE ('idVbws')

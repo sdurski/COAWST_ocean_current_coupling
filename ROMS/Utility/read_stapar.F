@@ -115,6 +115,12 @@
             CASE ('Sout(idVsms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Sout(idVsms,1:Ngrids)=Lswitch(1:Ngrids)
+#if defined OC_SUV_2AT
+            CASE ('Sout(idUcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Sout(idUcaw,:))
+            CASE ('Sout(idVcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Sout(idVcaw,:))
+#endif
             CASE ('Sout(idUbms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Sout(idUbms,1:Ngrids)=Lswitch(1:Ngrids)
@@ -582,6 +588,14 @@
             IF (Sout(idVsms,ng)) WRITE (out,90) Sout(idVsms,ng),        &
      &          'Sout(idVsms)',                                         &
      &          'Write out surface V-momentum stress.'
+#if defined OC_SUV_2AT
+            IF (Sout(idUcaw,ng)) WRITE (out,90) Sout(idUcaw,ng),        &
+     &          'Sout(idUcaw)',                                         &
+     &          'Write out surface layer estimate of u-vel for atm.'
+            IF (Sout(idVcaw,ng)) WRITE (out,90) Sout(idVcaw,ng),        &
+     &          'Sout(idVcaw)',                                         &
+     &          'Write out surface layer estimate of v-vel for atm.'
+#endif
             IF (Sout(idUbms,ng)) WRITE (out,90) Sout(idUbms,ng),        &
      &          'Sout(idUbms)',                                         &
      &          'Write out bottom U-momentum stress.'

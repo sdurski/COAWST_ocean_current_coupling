@@ -1579,6 +1579,22 @@
               END IF
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Hout(idVsms,1:Ngrids)=Lswitch(1:Ngrids)
+#if defined OC_SUV_2AT
+            CASE ('Hout(idUcaw)')
+              IF (idUcaw.eq.0) THEN
+                IF (Master) WRITE (out,280) 'idUcaw'
+                exit_flag=5
+                RETURN
+              END IF
+              Npts=load_l(Nval, Cval, Ngrids, Hout(idUcaw,:))
+            CASE ('Hout(idVcaw)')
+              IF (idVcaw.eq.0) THEN
+                IF (Master) WRITE (out,280) 'idVcaw'
+                exit_flag=5
+                RETURN
+              END IF
+              Npts=load_l(Nval, Cval, Ngrids, Hout(idVcaw,:))
+#endif
             CASE ('Hout(idUbms)')
               IF (idUbms.eq.0) THEN
                 IF (Master) WRITE (out,280) 'idUbms'
@@ -2392,6 +2408,12 @@
             CASE ('Qout(idVsms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Qout(idVsms,1:Ngrids)=Lswitch(1:Ngrids)
+#if defined OC_SUV_2AT
+            CASE ('Qout(idUcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Qout(idUcaw,:))
+            CASE ('Qout(idVcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Qout(idVcaw,:))
+#endif
             CASE ('Qout(idUbms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Qout(idUbms,1:Ngrids)=Lswitch(1:Ngrids)
@@ -2662,6 +2684,12 @@
             CASE ('Aout(idVsms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Aout(idVsms,1:Ngrids)=Lswitch(1:Ngrids)
+#if defined OC_SUV_2AT
+            CASE ('Aout(idUcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Aout(idUcaw,:))
+            CASE ('Aout(idVcaw)')
+              Npts=load_l(Nval, Cval, Ngrids, Aout(idVcaw,:))
+#endif
             CASE ('Aout(idUbms)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Aout(idUbms,1:Ngrids)=Lswitch(1:Ngrids)
@@ -6022,6 +6050,14 @@
             IF (Hout(idVsms,ng)) WRITE (out,170) Hout(idVsms,ng),       &
      &         'Hout(idVsms)',                                          &
      &         'Write out surface V-momentum stress.'
+#if defined OC_SUV_2AT
+            IF (Hout(idUcaw,ng)) WRITE (out,170) Hout(idUcaw,ng),       &
+     &         'Hout(idUcaw)',                                          &
+     &         'Write out surface layer u-velocity estimate for atm.'
+            IF (Hout(idVcaw,ng)) WRITE (out,170) Hout(idVcaw,ng),       &
+     &         'Hout(idVcaw)',                                          &
+     &         'Write out surface layer v-velocity estimate for atm.'
+#endif
             IF (Hout(idUbms,ng)) WRITE (out,170) Hout(idUbms,ng),       &
      &         'Hout(idUbms)',                                          &
      &         'Write out bottom U-momentum stress.'
@@ -6430,6 +6466,14 @@
             IF (Qout(idVsms,ng)) WRITE (out,170) Qout(idVsms,ng),       &
      &         'Qout(idVsms)',                                          &
      &         'Write out surface V-momentum stress.'
+#if defined OC_SUV_2AT
+            IF (Qout(idUcaw,ng)) WRITE (out,170) Qout(idUcaw,ng),       &
+     &         'Qout(idUcaw)',                                          &
+     &         'Write out surface layer estimate of u-vel. for atm.'
+            IF (Qout(idVcaw,ng)) WRITE (out,170) Qout(idVcaw,ng),       &
+     &         'Qout(idVcaw)',                                          &
+     &         'Write out surface layer estimate of v-vel.for atm.'
+#endif
             IF (Qout(idUbms,ng)) WRITE (out,170) Qout(idUbms,ng),       &
      &         'Qout(idUbms)',                                          &
      &         'Write out bottom U-momentum stress.'
@@ -6725,6 +6769,14 @@
             IF (Aout(idVsms,ng)) WRITE (out,170) Aout(idVsms,ng),       &
      &         'Aout(idVsms)',                                          &
      &         'Write out averaged surface V-momentum stress.'
+#if defined OC_SUV_2AT
+            IF (Aout(idUcaw,ng)) WRITE (out,170) Aout(idUcaw,ng),       &
+     &         'Aout(idUcaw)',                                          &
+     &         'Write out avg. surface layer estimate of u-vel for atm.'
+            IF (Aout(idVcaw,ng)) WRITE (out,170) Aout(idVcaw,ng),       &
+     &         'Aout(idVcaw)',                                          &
+     &         'Write out avg. surface layer estimate of v-vel for atm.'
+#endif
             IF (Aout(idUbms,ng)) WRITE (out,170) Aout(idUbms,ng),       &
      &         'Aout(idUbms)',                                          &
      &         'Write out averaged bottom U-momentum stress.'

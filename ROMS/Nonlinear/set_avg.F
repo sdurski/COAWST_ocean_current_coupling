@@ -696,6 +696,31 @@
           END DO
         END IF
 
+# if defined OC_SUV_2AT
+        IF (Aout(idUcaw,ng)) THEN
+          DO j=JstrR,JendR
+            DO i=Istr,IendR
+              AVERAGE(ng)%avgUcaw(i,j)=OCEAN(ng)%u_caw(i,j)
+#  ifdef WET_DRY
+              AVERAGE(ng)%avgUcaw(i,j)=AVERAGE(ng)%avgUcaw(i,j)*        &
+     &                                GRID(ng)%rmask_full(i,j)
+#  endif
+            END DO
+          END DO
+        END IF
+        IF (Aout(idVcaw,ng)) THEN
+          DO j=Jstr,JendR
+            DO i=IstrR,IendR
+              AVERAGE(ng)%avgVcaw(i,j)=OCEAN(ng)%v_caw(i,j)
+#  ifdef WET_DRY
+              AVERAGE(ng)%avgVcaw(i,j)=AVERAGE(ng)%avgVcaw(i,j)*        &
+     &                                GRID(ng)%rmask_full(i,j)
+#  endif
+            END DO
+          END DO
+        END IF
+# endif
+
         IF (Aout(idUbms,ng)) THEN
           DO j=JstrR,JendR
             DO i=Istr,IendR
@@ -2222,6 +2247,33 @@
             END DO
           END DO
         END IF
+
+# if defined OC_SUV_2AT 
+        IF (Aout(idUcaw,ng)) THEN
+          DO j=JstrR,JendR
+            DO i=Istr,IendR
+              AVERAGE(ng)%avgUcaw(i,j)=AVERAGE(ng)%avgUcaw(i,j)+        &
+#  ifdef WET_DRY
+     &                                GRID(ng)%rmask_full(i,j)*         &
+#  endif
+     &                                OCEAN(ng)%u_caw(i,j)
+            END DO
+          END DO
+        END IF
+        IF (Aout(idVcaw,ng)) THEN
+          DO j=Jstr,JendR
+            DO i=IstrR,IendR
+              AVERAGE(ng)%avgVcaw(i,j)=AVERAGE(ng)%avgVcaw(i,j)+        &
+#  ifdef WET_DRY
+     &                                GRID(ng)%rmask_full(i,j)*         &
+#  endif
+     &                                OCEAN(ng)%v_caw(i,j)
+            END DO
+          END DO
+        END IF
+# endif
+ 
+
 
         IF (Aout(idUbms,ng)) THEN
           DO j=JstrR,JendR
@@ -4047,6 +4099,50 @@
 # endif
           END IF
         END IF
+
+# if defined OC_SUV_2AT
+        IF (Aout(idUcaw,ng)) THEN
+          DO j=JstrR,JendR
+            DO i=Istr,IendR
+              AVERAGE(ng)%avgUcaw(i,j)=ufac(i,j)*                       &
+     &                                AVERAGE(ng)%avgUcaw(i,j)
+            END DO
+          END DO
+          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
+            CALL exchange_r2d_tile (ng, tile,                           &
+     &                              LBi, UBi, LBj, UBj,                 &
+     &                              AVERAGE(ng)%avgUcaw)
+# ifdef DISTRIBUTE
+            CALL mp_exchange2d (ng, tile, iNLM, 1,                      &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          NghostPoints,                           &
+     &                          EWperiodic(ng), NSperiodic(ng),         &
+     &                          AVERAGE(ng)%avgUcaw)
+# endif
+          END IF
+        END IF
+
+        IF (Aout(idVcaw,ng)) THEN
+          DO j=Jstr,JendR
+            DO i=IstrR,IendR
+              AVERAGE(ng)%avgVcaw(i,j)=vfac(i,j)*                       &
+     &                                AVERAGE(ng)%avgVcaw(i,j)
+            END DO
+          END DO
+          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
+            CALL exchange_r2d_tile (ng, tile,                           &
+     &                              LBi, UBi, LBj, UBj,                 &
+     &                              AVERAGE(ng)%avgVcaw)
+# ifdef DISTRIBUTE
+            CALL mp_exchange2d (ng, tile, iNLM, 1,                      &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          NghostPoints,                           &
+     &                          EWperiodic(ng), NSperiodic(ng),         &
+     &                          AVERAGE(ng)%avgVcaw)
+# endif
+          END IF
+        END IF
+# endif
 
         IF (Aout(idUbms,ng)) THEN
           DO j=JstrR,JendR

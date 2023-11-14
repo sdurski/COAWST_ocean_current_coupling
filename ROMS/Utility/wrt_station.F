@@ -1036,6 +1036,42 @@
      &                        varid = STA(ng)%Vid(idVsms))
         IF (FoundError(exit_flag, NoError, __LINE__, MyFile)) RETURN
       END IF
+#if defined OC_SUV_2AT
+!
+!  Write out surface layer estimate of u-velocity for coupling to atm. model
+!
+      IF (Sout(idUcaw,ng)) THEN
+        scale= 1.0_r8
+        CALL extract_sta2d (ng, iNLM, Cgrid, idUcaw, r2dvar,            &
+     &                      LBi, UBi, LBj, UBj,                         &
+     &                      scale, OCEAN(ng)%u_caw,                     &
+     &                      Nstation(ng), Xpos, Ypos, psta)
+        CALL netcdf_put_fvar (ng, iNLM, STA(ng)%name,                   &
+     &                        TRIM(Vname(1,idUcaw)), psta,              &
+     &                        (/1,STA(ng)%Rindex/), (/Nstation(ng),1/), &
+     &                        ncid = STA(ng)%ncid,                      &
+     &                        varid = STA(ng)%Vid(idUcaw))
+        IF (FoundError(exit_flag, NoError, __LINE__,                    &
+     &                 __FILE__)) RETURN
+      END IF
+!
+!  Write out surface layer estimate of v-velocity for coupling to atm. model
+!
+      IF (Sout(idVcaw,ng)) THEN
+        scale= 1.0_r8
+        CALL extract_sta2d (ng, iNLM, Cgrid, idVcaw, v2dvar,            &
+     &                      LBi, UBi, LBj, UBj,                         &
+     &                      scale, OCEAN(ng)%v_caw,                    &
+     &                      Nstation(ng), Xpos, Ypos, psta)
+        CALL netcdf_put_fvar (ng, iNLM, STA(ng)%name,                   &
+     &                        TRIM(Vname(1,idVcaw)), psta,              &
+     &                        (/1,STA(ng)%Rindex/), (/Nstation(ng),1/), &
+     &                        ncid = STA(ng)%ncid,                      &
+     &                        varid = STA(ng)%Vid(idVcaw))
+        IF (FoundError(exit_flag, NoError, __LINE__,                    &
+     &                 __FILE__)) RETURN
+      END IF
+#endif
 !
 !  Write out bottom U-momentum stress.
 !

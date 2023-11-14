@@ -207,6 +207,24 @@
   'r2dvar'
   1.0d0
 
+'u_caw'                                   ! Output
+  'model surface layer mom. estimate for air-sea coupling at RHO-points'
+  'meter second-1'                                 ! [m/s]
+  'u_caw, scalar, series'
+  'ocean_time'
+  'idUcaw'
+  'r2dvar'
+  1.0d0
+
+'v_caw'                                  ! Output
+  'model surface layer mom. estimate for air-sea coupling at RHO-points'
+  'meter second-1'                                 ! [m/s]
+  'v_caw, scalar, series'
+  'ocean_time'
+  'idVcaw'
+  'r2dvar'
+  1.0d0
+
 'w'                                                ! Output
   'vertical momentum component'
   'meter second-1'                                 ! [m/s]

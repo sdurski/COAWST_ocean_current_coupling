@@ -2412,6 +2412,46 @@
      &                   NF_FOUT, nvd3, v2dgrd, Aval, Vinfo, ncname)
           IF (FoundError(exit_flag, NoError, __LINE__, MyFile)) RETURN
         END IF
+#if defined OC_SUV_2AT
+!
+!  Define surface layer U velocity estimate for coupling with atm. model.
+!
+        IF (Hout(idUcaw,ng)) THEN
+          Vinfo( 1)=Vname(1,idUcaw)
+          Vinfo( 2)=Vname(2,idUcaw)
+          Vinfo( 3)=Vname(3,idUcaw)
+          Vinfo(14)=Vname(4,idUcaw)
+          Vinfo(16)=Vname(1,idtime)
+# if defined WRITE_WATER && defined MASKING
+          Vinfo(20)='mask_u'
+# endif
+          Vinfo(22)='coordinates'
+          Aval(5)=REAL(Iinfo(1,idUcaw,ng),r8)
+          status=def_var(ng, iNLM, HIS(ng)%ncid, HIS(ng)%Vid(idUcaw),   &
+     &                   NF_FOUT, nvd3, t2dgrd, Aval, Vinfo, ncname)
+          IF (FoundError(exit_flag, NoError, __LINE__,                  &
+     &                   __FILE__)) RETURN
+        END IF
+!
+!  Define surface V velocity estimate for coupling with atm. model
+!
+        IF (Hout(idVcaw,ng)) THEN
+          Vinfo( 1)=Vname(1,idVcaw)
+          Vinfo( 2)=Vname(2,idVcaw)
+          Vinfo( 3)=Vname(3,idVcaw)
+          Vinfo(14)=Vname(4,idVcaw)
+          Vinfo(16)=Vname(1,idtime)
+# if defined WRITE_WATER && defined MASKING
+          Vinfo(20)='mask_v'
+# endif
+          Vinfo(22)='coordinates'
+          Aval(5)=REAL(Iinfo(1,idVcaw,ng),r8)
+          status=def_var(ng, iNLM, HIS(ng)%ncid, HIS(ng)%Vid(idVcaw),   &
+     &                   NF_FOUT, nvd3, t2dgrd, Aval, Vinfo, ncname)
+          IF (FoundError(exit_flag, NoError, __LINE__,                  &
+     &                   __FILE__)) RETURN
+        END IF
+#endif
 !
 !  Define bottom U-momentum stress.
 !
@@ -4325,6 +4365,14 @@
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVsms))) THEN
             got_var(idVsms)=.TRUE.
             HIS(ng)%Vid(idVsms)=var_id(i)
+#if defined OC_SUV_2AT
+          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idUcaw))) THEN
+            got_var(idUcaw)=.TRUE.
+            HIS(ng)%Vid(idUcaw)=var_id(i)
+          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVcaw))) THEN
+            got_var(idVcaw)=.TRUE.
+            HIS(ng)%Vid(idVcaw)=var_id(i)
+#endif
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idUbms))) THEN
             got_var(idUbms)=.TRUE.
             HIS(ng)%Vid(idUbms)=var_id(i)
@@ -5075,6 +5123,20 @@
           exit_flag=3
           RETURN
         END IF
+#if defined OC_SUV_2AT
+        IF (.not.got_var(idUcaw).and.Hout(idUcaw,ng)) THEN
+          IF (Master) WRITE (stdout,70) TRIM(Vname(1,idUcaw)),          &
+     &                                  TRIM(ncname)
+          exit_flag=3
+          RETURN
+        END IF
+        IF (.not.got_var(idVcaw).and.Hout(idVcaw,ng)) THEN
+          IF (Master) WRITE (stdout,70) TRIM(Vname(1,idVcaw)),          &
+     &                                  TRIM(ncname)
+          exit_flag=3
+          RETURN
+        END IF
+#endif
         IF (.not.got_var(idUbms).and.Hout(idUbms,ng)) THEN
           IF (Master) WRITE (stdout,70) TRIM(Vname(1,idUbms)),          &
      &                                  TRIM(ncname)

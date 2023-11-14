@@ -248,7 +248,7 @@
       integer :: par_grid_nomove, par_scale, offset
 
       integer, pointer :: start(:), length(:)
-      character (len=120)  :: to_add, avstring
+      character (len=120)  :: to_add, avstring, ovstring
 
 !-----------------------------------------------------------------------
 !  Begin initialization phase.
@@ -645,14 +645,38 @@
 !
 !  Initialize attribute vector holding the export data code string of
 !  the ocean model.
-#  ifdef MCT_INTERP_OC2AT
-        CALL AttrVect_init (AttrVect_O(ia,io)%ocn2atm_AV,               &
-     &                      rList="SST:CPL_MASK",lsize=gsmsize)
-#  else
-        CALL AttrVect_init (AttrVect_O(ia,io)%ocn2atm_AV,               &
-     &                      rList="SST",lsize=gsmsize)
-#  endif
-        CALL AttrVect_zero (AttrVect_O(ia,io)%ocn2atm_AV)
+      cad=LEN(ovstring)
+      DO i=1,cad
+        ovstring(i:i)=''
+      END DO
+      cid=1
+!
+      to_add='SST'
+      cad=LEN_TRIM(to_add)
+      write(ovstring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+#if defined OC_SUV_2AT
+!CSD add data strings for surface u and v.
+!CSD (There is an assumption above that SST is always passed.)
+      to_add=':UOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(ovstring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+      to_add=':VOCEAN'
+      cad=LEN_TRIM(to_add)
+      write(ovstring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+#endif
+#ifdef MCT_INTERP_OC2AT
+      to_add=':CPL_MASK'
+      cad=LEN_TRIM(to_add)
+      write(ovstring(cid:cid+cad-1),'(a)') to_add(1:cad)
+      cid=cid+cad
+#endif
+      CALL AttrVect_init (AttrVect_O(ia,io)%ocn2atm_AV,                 &
+     &                      rList=TRIM(ovstring),lsize=gsmsize)
+      
+      CALL AttrVect_zero (AttrVect_O(ia,io)%ocn2atm_AV)
 
 #  ifdef MOVE_NESTS
         IF (moving_nest(ia).eq.1) THEN
@@ -664,7 +688,7 @@
           Asize=GlobalSegMap_lsize(GSMapInterp_R(ia)%GSMapStatic,       &
      &                             ATM_COMM_WORLD)
           CALL AttrVect_init (AV2_RO(ia,io)%crs2fin_AV2,                &
-     &                        rList="SST:CPL_MASK",lsize=Asize)
+     &                        rList=TRIM(ovstring),,lsize=Asize)
           CALL AttrVect_zero (AV2_RO(ia,io)%crs2fin_AV2)
 !
 !  Initialize attribute vector holding the export data code string of
@@ -1925,6 +1949,67 @@
      &                      range(1),range(2)
         END IF
       END IF
+
+#if defined OC_SUV_2AT 
+!
+! Collect ocean surface u- velocity component
+!
+      CALL AttrVect_exportRAttr (AttrVect_O(ia,io)%ocn2atm_AV,         &
+     &                           "UOCEAN", AA, Asize)
+      range(1)= Large
+      range(2)=-Large
+      ij=0
+      DO j=js,je
+        DO i=is,ie
+          ij=ij+1
+          cff=AA(ij)*Amask(ij)
+          grid%uoce(i,j)=cff+grid%uoce(i,j)*(1.0-Amask(ij))
+          range(1)=MIN(range(1),cff)
+          range(2)=MAX(range(2),cff)
+        END DO
+      END DO
+      IF (aux4flag.eq.0) THEN
+        CALL mpi_allreduce ( range(1), retval , 1, MPI_REAL,            &
+     &                       MPI_MIN, ATM_COMM_WORLD, ierr )
+        range(1)=retval
+        CALL mpi_allreduce ( range(2), retval , 1, MPI_REAL,            &
+     &                       MPI_MAX, ATM_COMM_WORLD, ierr )
+        range(2)=retval
+        IF (Myrank.eq.0) THEN
+          write(*,40) 'ROMStoWRF  Min/Max ocn.surf.u  (m/s): ',        &
+     &                      range(1),range(2)
+        END IF
+      END IF
+!
+! Collect ocean surface v- velocity component
+!
+      CALL AttrVect_exportRAttr (AttrVect_O(ia,io)%ocn2atm_AV,          &
+     &                           "VOCEAN", AA, Asize)
+      range(1)= Large
+      range(2)=-Large
+      ij=0
+      DO j=js,je
+        DO i=is,ie
+          ij=ij+1
+          cff=AA(ij)*Amask(ij)
+          grid%voce(i,j)=cff+grid%voce(i,j)*(1.0-Amask(ij))
+          range(1)=MIN(range(1),cff)
+          range(2)=MAX(range(2),cff)
+        END DO
+      END DO
+      IF (aux4flag.eq.0) THEN
+        CALL mpi_allreduce ( range(1), retval , 1, MPI_REAL,            &
+     &                       MPI_MIN, ATM_COMM_WORLD, ierr )
+        range(1)=retval
+        CALL mpi_allreduce ( range(2), retval , 1, MPI_REAL,            &
+     &                       MPI_MAX, ATM_COMM_WORLD, ierr )
+        range(2)=retval
+        IF (Myrank.eq.0) THEN
+          write(*,40) 'ROMStoWRF  Min/Max ocn.surf.v  (m/s): ',         &
+     &                      range(1),range(2)
+        END IF
+      END IF
+#endif
 !
 !  Deallocate communication arrays.
 !

@@ -214,6 +214,12 @@
 !
           real(r8), pointer :: avgsus(:,:)
           real(r8), pointer :: avgsvs(:,:)
+!
+!  Surface coupling velocity sent to Atm. Model
+# if defined OC_SUV_2AT 
+          real(r8), pointer :: avgUcaw(:,:)
+          real(r8), pointer :: avgVcaw(:,:)
+# endif
 
           real(r8), pointer :: avgbus(:,:)
           real(r8), pointer :: avgbvs(:,:)
@@ -547,6 +553,18 @@
         allocate ( AVERAGE(ng) % avgbvs(LBi:UBi,LBj:UBj) )
         Dmem(ng)=Dmem(ng)+size2d
       END IF
+
+!
+!    Time-averaged surface coupling velocity 
+!
+# if defined OC_SUV_2AT 
+      IF (Aout(idUcaw,ng)) THEN
+        allocate ( AVERAGE(ng) % avgUcaw(LBi:UBi,LBj:UBj) )
+      END IF
+      IF (Aout(idVcaw,ng)) THEN
+        allocate ( AVERAGE(ng) % avgVcaw(LBi:UBi,LBj:UBj) )
+      END IF
+# endif
 
 # ifdef BBL_MODEL
       IF (Aout(idUbrs,ng)) THEN
@@ -1896,6 +1914,24 @@
           END DO
         END DO
       END IF
+
+# if defined OC_SUV_2AT 
+      IF (Aout(idUcaw,ng)) THEN
+        DO j=Jmin,Jmax
+          DO i=Imin,Imax
+            AVERAGE(ng) % avgUcaw(i,j) = IniVal
+          END DO
+        END DO
+      END IF
+      IF (Aout(idVcaw,ng)) THEN
+        DO j=Jmin,Jmax
+          DO i=Imin,Imax
+            AVERAGE(ng) % avgVcaw(i,j) = IniVal
+          END DO
+        END DO
+      END IF
+# endif
+
 
 # ifdef BBL_MODEL
       IF (Aout(idUbrs,ng)) THEN

@@ -1408,6 +1408,54 @@
           RETURN
         END IF
       END IF
+#if defined OC_SUV_2AT
+!
+!  Write out surface layer estimate of u-velocity for coupling to atm. model
+!
+      IF (Qout(idUcaw,ng)) THEN
+        scale=1.0                          ! m2/s2 to Pa
+        gtype=gfactor*r2dvar
+        status=nf_fwrite2d(ng, iNLM, QCK(ng)%ncid, QCK(ng)%Vid(idUcaw), &
+     &                     QCK(ng)%Rindex, gtype,                       &
+     &                     LBi, UBi, LBj, UBj, scale,                   &
+#ifdef MASKING
+     &                     GRID(ng) % rmask,                            &
+#endif
+     &                     OCEAN(ng) % u_caw)
+        IF (FoundError(status, nf90_noerr, __LINE__,                    &
+     &                 __FILE__)) THEN
+          IF (Master) THEN
+            WRITE (stdout,10) TRIM(Vname(1,idUcaw)), QCK(ng)%Rindex
+          END IF
+          exit_flag=3
+          ioerror=status
+          RETURN
+        END IF
+      END IF
+!
+!  Write out surface layer estimate of v-velocity for coupling to atm. model
+!
+      IF (Qout(idVcaw,ng)) THEN
+        scale=1.0
+        gtype=gfactor*r2dvar
+        status=nf_fwrite2d(ng, iNLM, QCK(ng)%ncid, QCK(ng)%Vid(idVcaw), &
+     &                     QCK(ng)%Rindex, gtype,                       &
+     &                     LBi, UBi, LBj, UBj, scale,                   &
+#ifdef MASKING
+     &                     GRID(ng) % rmask,                            &
+#endif
+     &                     OCEAN(ng) % v_caw)
+        IF (FoundError(status, nf90_noerr, __LINE__,                    &
+     &                 __FILE__)) THEN
+          IF (Master) THEN
+            WRITE (stdout,10) TRIM(Vname(1,idVcaw)), QCK(ng)%Rindex
+          END IF
+          exit_flag=3
+          ioerror=status
+          RETURN
+        END IF
+      END IF
+#endif
 !
 !  Write out bottom U-momentum stress.
 !
