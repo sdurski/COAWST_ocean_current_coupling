@@ -1,0 +1,7 @@
+Files in several different subdirectories needed to be modifed for the ocean surface current coupling to atmospheric models. 
+These include  
+
+ Nonlinear/ - set_average
+ Utility/  -  def* wrt* read_phypar, etc 
+ Modules/  -  mod_ocean, mod_averages
+ External/ - varinfo

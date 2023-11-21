@@ -1,0 +1,74 @@
+This directory contains the surface boundary layers schemes. Some of these schems already incorporate the influence of ocean surface currents while others do not. It is not clear that those that do incorporate the ocean surface current do so in quite the same way. 
+
+The first bl scheme we implement the coupling for is the YSU (Yonsei University) scheme. This scheme required no modification as it already incorporated the uoce, and voce variables. The variables are subtracted from the level k=1 u and v velocites to form a variable wspd1. Below uox, vox are uoce and voce.
+
+   wspd1(i) = sqrt( (ux(i,1)-uox(i))*(ux(i,1)-uox(i)) + (vx(i,1)-vox(i))*(vx(i,1)-vox(i)) )+1.e-9
+
+Note: ux and vx are the k=1 level, not the 10 m wind speeds. Another variable is specifically calculated in this scheme called wspd10, which is calculated from u10, v10. 
+
+wspd1 is found in two places 
+1)  in a topographic stability correction.
+!raquel
+!ctopo stability correction
+      fric(i,1)=ust(i)**2/wspd1(i)*rhox(i)*g/del(i,1)*dt2         &
+        *(wspd1(i)/wspd(i))**2
+
+2) and as part of one of the terms sent to the (tridiagonal?) solver. 
+
+    f1(i,1) = ux(i,1)+uox(i)*ust(i)**2*rhox(i)*g/del(i,1)*dt2/wspd1(i)*(wspd1(i)/wspd(i))**2
+    f2(i,1) = vx(i,1)+vox(i)*ust(i)**2*rhox(i)*g/del(i,1)*dt2/wspd1(i)*(wspd1(i)/wspd(i))**2
+
+This term amounts to  ux + uoce * fric
+
+the 'fric' variable also enters the solver in a different (LHS?) term.
+     if(present(ctopo)) then
+        vconvnew=0.9*vconvfx(i)+1.5*(max((pblh_ysu(i)-500)/1000.0,0.0))
+        vconvlim = min(vconvnew,1.0)
+       ad(i,1) = 1.+(1.0-bepswitch*frc_urb1d(i))* &
+                     (fric(i,1)*vconvlim+ctopo(i)*fric(i,1)*(1-vconvlim)) - &
+                     fric(i,1)*bepswitch*(1-frc_urb1d(i))
+      else
+       ad(i,1) = 1.+(1.0-bepswitch)*fric(i,1)
+      endif
+
+'ctopo' is a topographic correction switch in WRF.  bepswitch is for urban topography. 
+
+wspd10 is only used in YSU in one place, to determine if the model meets a stable boundary layer criteria. and subsequently determine hpbl
+     if((.not.stable(i)).and.((xland(i)-1.5).ge.0))then
+       wspd10 = u10(i)*u10(i) + v10(i)*v10(i)
+       wspd10 = sqrt(wspd10)
+       ross = wspd10 / (cori*znt(i))
+       brcr_sbro(i) = min(0.16*(1.e-7*ross)**(-0.18),.3)
+     endif
+ ...   (xland>1.5 == water)
+    if((xland(i)-1.5).ge.0)then
+         brcr(i) = brcr_sbro(i)
+...
+      if(.not.stable(i))then
+         brdn(i) = brup(i)
+         spdk2   = max(ux(i,k)**2+vx(i,k)**2,1.)
+         brup(i) = (thvx(i,k)-thermal(i))*(g*za(i,k)/thvx(i,1))/spdk2
+         kpbl(i) = k
+         stable(i) = brup(i).gt.brcr(i)
+     endif
+     if((.not.sfcflg(i)).and.hpbl(i).lt.zq(i,2)) then
+       k = kpbl(i)
+       if(brdn(i).ge.brcr(i))then
+         brint = 0.
+       elseif(brup(i).le.brcr(i))then
+         brint = 1.
+       else
+         brint = (brcr(i)-brdn(i))/(brup(i)-brdn(i))
+       endif
+       hpbl(i) = za(i,k-1)+brint*(za(i,k)-za(i,k-1))
+       if(hpbl(i).lt.zq(i,2)) kpbl(i) = 1
+       if(kpbl(i).le.1) pblflg(i) = .false.
+     endif
+ 
+I rationalize that uoce and voce being specifically included in the routine, but not included where wspd10 is used is intentional and that the scheme is accounting for the effect of the surface current as intended.  
+
+The implementation looks like Lemarie's description of the necessary additions to add the ocean current cuoupling PLUS something. I think this additional bit is related to the convective paramterization within the YSU scheme.
+
+
+
+  

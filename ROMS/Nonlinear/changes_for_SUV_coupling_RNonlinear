@@ -1,0 +1,3 @@
+The first change I needed to make in the ROMS/Nonlinear directory to accomodate surface current coupling was to calculate the average values of the ucaw and vcaw variables for writing to average files.
+
+This amounted to adding a few loops to set_avg.F matching the pattern of other surface time-averaged variables.

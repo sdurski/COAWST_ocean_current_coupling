@@ -1,0 +1,37 @@
+The changes that are needed for the surface current coupling in the ROMS/Utility directory entirely follow the template of other variables that are written to history, average, station and quick netcdf files. Variables for the various output files are defined, and output. Checks are made to determine if the variables are to be output and to ensure the variables are available.  In hindsight it might make more sense to either always output both ucaw and vcaw or never do both. It's probably not necessary to hhave seperate switches for u and v components, as there aren't many situations I can think of that you'd want to output one but not the other.
+
+Here's a list of all the places in the old version of COAWST where OC_SUV was specified
+
+1 def_avg.F:2070 col 14: # if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 2 def_avg.F:3992 col 14: # if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 3 def_avg.F:4816 col 14: # if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 4 def_his.F:2386 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 5 def_his.F:4494 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 6 def_his.F:5297 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 7 def_quick.F:1425 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 8 def_quick.F:2519 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 9 def_quick.F:3067 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+10 def_station.F:1000 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+11 def_station.F:2538 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+12 def_station.F:3138 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+13 read_phypar.F:1477 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+14 read_phypar.F:2140 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+15 read_phypar.F:2535 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+16 read_phypar.F:2729 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+17 read_phypar.F:3187 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+18 read_phypar.F:5877 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+19 read_phypar.F:6248 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+20 read_phypar.F:6554 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+21 read_phypar.F:6837 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+22 read_phypar.F:7193 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+23 read_stapar.F:106 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+24 read_stapar.F:478 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+25 wrt_avg.F:3548 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+26 wrt_his.F:3417 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+27 wrt_quick.F:1311 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+28 wrt_station.F:1001 col 13: #if defined OC_SUV_2AT || defined OC_SUVG_2AT || defined OC_SUVZ_2AT\
+ 
+
+BUT  there are fewer places in the Utility directory of the the current version that need to be modified because the Hout2 and Aout2 output options have been removed (I think?). 
+
+

@@ -1,0 +1,14 @@
+In order to couple ocean surface currents to WRF surface u- and v- fields need to be passed to WRF through the atm_coupler routine in the frame/ directory. 
+
+This routine has sort of been 'hardwired' to consider only SST to be passed from the ocean model. But by analogy with the setup for passing multiple fields to the ocean model from WRF, we can modify atm_coupler.F
+
+1. One such change involves the rList passed through AttrVect_init. This looks to be a colon seperated list of variables.  If only SST is communicated between grids, one or two fields need to be passed from atm to ocean. These are SST and CPL_MASK. CPL_MASK only needs to be passed if MCT_INTERP_OC2AT is defined or we have MOVE_NESTS.  
+   I have modified this routine for defined MCT_INTERP_OC2AT, but I have only put a guess in for what's required for MOVE_NESTS.
+NOTE: there is an assumption in this design that SST should always be passed if there is air-sea coupling.
+To start I have added the potential for WRF to receive the ocean surface current field for the general cases, but I have not implemented the case where we adjust with a weighted average of atmospheric and ocean surface geostrophic velocity.
+
+
+atm_coupler.F is the only routine in WRF that has the preprocessor OC_SUV_2AT. 
+The only other changes to WRF are in the boundary layer schemes.
+
+This is because WRF is 'setup' to receive surface ocean velocities in the variables UOCE and VOCE. 

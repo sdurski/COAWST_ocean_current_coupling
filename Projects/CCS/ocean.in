@@ -229,7 +229,8 @@ ad_VolCons(north) ==  F                            ! northern boundary
 !      NTIMES == 12480      ! 25  days For March 2009 starting on the 7th
 
 !      NTIMES == 189120     !224 days March 7, 2009 (day 170) = 394 days
-      NTIMES == 188160     ! run through the end of October 14th.
+!      NTIMES == 188160     ! run through the end of October 14th.
+      NTIMES == 14400      ! run for 30 days
           DT == 180.0d0
      NDTFAST == 50
 
@@ -262,11 +263,11 @@ ad_VolCons(north) ==  F                            ! northern boundary
 ! Output history, average, diagnostic files parameters.
 
      LDEFOUT == F
-        NHIS == 480
-     NDEFHIS == 480
+        NHIS == 2400
+     NDEFHIS == 2400
       NTSAVG == 1
-        NAVG == 480
-     NDEFAVG == 480
+        NAVG == 2400
+     NDEFAVG == 2400
       NTSDIA == 1
         NDIA == 480
      NDEFDIA == 480
@@ -938,12 +939,12 @@ Dout(iTvdif) == F F     ! temp_vdiff, ...    vertical diffusion
 ! Output NetCDF file names, [1:Ngrids].
 
      GSTNAME == CCS_output/ocean_gst.nc
-     RSTNAME == CCS_output/ocean_CCS8_ysu_suvN_rst.nc 
-     HISNAME == CCS_output/ocean_CCS8_ysu_suvN_his.nc
+     RSTNAME == CCS_output/ocean_CCS8_ysuN_rst.nc 
+     HISNAME == CCS_output/ocean_CCS8_ysuN_his.nc
      TLMNAME == CCS_output/ocean_tlm.nc
      TLFNAME == CCS_output/ocean_tlf.nc
      ADJNAME == CCS_output/ocean_adj.nc
-     AVGNAME == CCS_output/ocean_CCS8_ysu_suvN_avg.nc
+     AVGNAME == CCS_output/ocean_CCS8_ysuN_suv_avg.nc
      DIANAME == CCS_output/ocean_dia.nc
      STANAME == CCS_output/ocean_sta.nc
      FLTNAME == CCS_output/ocean_flt.nc

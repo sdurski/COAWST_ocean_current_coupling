@@ -1,0 +1,57 @@
+#PBS -S /bin/csh
+#PBS -N coawst_CCS8_gbm
+# This example uses the Sandy Bridge nodes
+# User job can access ~31 GB of memory per Sandy Bridge node.
+# A memory intensive job that needs more than ~1.9 GB
+# per process should use less than 16 cores per node
+# to allow more memory per MPI process. This example
+# asks for 32 nodes and 8 MPI processes per node.
+# This request implies 32x8 = 256 MPI processes for the job.
+#PBS -l select=6:ncpus=24:model=has
+#PBS -l walltime=5:00:00
+#PBS -j oe
+#PBS -m e
+#PBS -q long
+
+# Load a compiler you use to build your executable, for example, comp-intel/2015.0.090.
+
+# Loading this thing ... comp-intel /2018.0.128 messes things up maybe?
+# ..maybe not module load comp-intel/2018.3.222
+#module load comp-intel/2020.4.304?
+
+# Load the NAS Recommended version of the SGI MPT Library.
+
+# Loading this thing mpi-sgi/ mpt.2.15r20 messes things up maybe?
+#module load mpt/2.23
+
+#module load netcdf/4.4.1.1_mpt
+
+source /nobackup/sdurski/modules_BSf.bash_i20
+
+# By default, PBS executes your job from your home directory.
+# However, you can use the environment variable
+# PBS_O_WORKDIR to change to the directory where
+# you submitted your job.
+
+#cd $PBS_O_WORKDIR
+cp namelist.input.gbm namelist.input
+cp ocean.in.gbm ocean.in
+
+# use of dplace to pin processes to processors may improve performance
+# Here you request to pin processes to processors 4-11 of each Sandy Bridge node.
+# For other processor types, you may have to pin to different processors.
+
+# The resource request of select=32 and mpiprocs=8 implies
+# that you want to have 256 MPI processes in total.
+# If this is correct, you can omit the -np 256 for mpiexec
+# that you might have used before.
+
+mpiexec -np 142 ./coawstMnhv coupling_CCS8.in > gbm.out
+
+# It is a good practice to write stderr and stdout to a file (ex: output)
+# Otherwise, they will be written to the PBS stderr and stdout in /PBS/spool,
+# which has limited amount  of space. When /PBS/spool is filled up, any job
+# that tries to write to /PBS/spool will die.
+# mv wrfrst* /nobackupp17/sdurski/COAWST/Projects/CCS/Restarts
+
+# -end of script-

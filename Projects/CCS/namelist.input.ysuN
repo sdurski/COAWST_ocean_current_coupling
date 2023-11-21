@@ -1,0 +1,131 @@
+ &time_control
+ run_days                            = 224,
+ run_hours                           = 0,
+ run_minutes                         = 0,
+ run_seconds                         = 0,
+ start_year                          = 2009, 2009, 2009,
+ start_month                         = 03,   03,   06,
+ start_day                           = 07,   07,   01,
+ start_hour                          = 00,   00,   00,
+ start_minute                        = 00,   00,   00,
+ start_second                        = 00,   00,   00,
+ end_year                            = 2009, 2009, 2009,
+ end_month                           = 4,    4,     4,
+ end_day                             = 6,    6,     6,
+ end_hour                            = 00,   00,   00,
+ end_minute                          = 00,   00,   00,
+ end_second                          = 00,   00,   00,
+ interval_seconds                    = 21600
+ input_from_file                     = .true.,.true.,.true.,
+ history_interval                    = 7200,  7200,   7200,
+ history_outname                     = "CCS_output/wrf_cpld_CCS8_ysuN_d<domain>_<date>"
+ frames_per_outfile                  = 8 ,   8, 1000,
+ restart                             = .false.,
+ restart_interval                    = 43200,
+ rst_inname                          = 'Restarts/wrfrst_cpld_CCS8_IsuvN_chk1_d<domain>_<date>',
+ rst_outname                         = 'Restarts/wrfrst_cpld_CCS8_IsuvN_chk1_d<domain>_<date>',
+ io_form_history                     = 2
+ io_form_restart                     = 2
+ io_form_input                       = 2
+ io_form_boundary                    = 2
+ debug_level                         = 0
+ force_use_old_data                  = T
+ auxinput4_inname                    = "wrflowinp_d<domain>",
+ auxinput4_interval                  = 360,360,360,
+ io_form_auxinput4                   = 2
+ /
+
+ &domains
+ time_step                           = 60,
+ time_step_fract_num                 = 0,
+ time_step_fract_den                 = 1,
+ max_dom                             = 2,
+ e_we                                = 131,   109,   133,
+ e_sn                                = 139,   169,   145,
+ e_vert                              = 52,    52,    46,
+ p_top_requested                     = 5000,
+ num_metgrid_levels                  = 27,
+ num_metgrid_soil_levels             = 4,
+ eta_levels                          = 1.00000, 0.99750, 0.99500, 0.99250, 0.99000,
+                                       0.98750, 0.98000, 0.97150, 0.96190, 0.95130,
+                                       0.93970, 0.92710, 0.91350, 0.89890, 0.88380, 
+                                       0.86830, 0.85240, 0.83620, 0.81970, 0.80290,
+                                       0.78580, 0.76840, 0.75080, 0.73290, 0.71470,
+                                       0.69600, 0.67650, 0.65550, 0.63380, 0.61170,
+                                       0.58880, 0.56520, 0.54140, 0.51740, 0.49310,
+                                       0.46850, 0.44370, 0.41850, 0.39370, 0.36850,
+                                       0.34290, 0.31630, 0.28870, 0.26010, 0.23050,
+                                       0.19990, 0.16850, 0.13630, 0.10350, 0.07010,
+                                       0.03630, 0.00000,
+ dx                                  = 36000, 12000,  4000,
+ dy                                  = 36000, 12000,  4000,
+ grid_id                             = 1,     2,     3,
+ parent_id                           = 0,     1,     2,
+ i_parent_start                      = 1,     47,    37,
+ j_parent_start                      = 1,     43,    39,
+ parent_grid_ratio                   = 1,     3,     3,
+ parent_time_step_ratio              = 1,     3,     3,
+ feedback                            = 0,
+ smooth_option                       = 0
+ nproc_x                             = 10 
+ nproc_y                             = 11
+ /
+
+ &physics
+ mp_physics                          = 10,    10     3,
+ ra_lw_physics                       = 4,     4,     1,
+ ra_sw_physics                       = 4,     4,     1,
+ radt                                = 30,    30,    30,
+ sf_sfclay_physics                   = 1,     1,     1,
+ sf_surface_physics                  = 2,     2,     2,
+ bl_pbl_physics                      = 1,     1,     1,
+ bldt                                = 0,     0,     0,
+ cu_physics                          = 1,     1,     0,
+ cudt                                = 5,     5,     5,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ icloud                              = 1,
+ surface_input_source                = 1
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ sst_update                          = 1,
+ sf_urban_physics                    = 0,     0,     0,
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ w_damping                           = 0,
+ diff_opt                            = 1,      1,      1,
+ km_opt                              = 4,      4,      4,
+ diff_6th_opt                        = 0,      0,      0,
+ diff_6th_factor                     = 0.12,   0.12,   0.12,
+ base_temp                           = 290.
+ damp_opt                            = 0,
+ zdamp                               = 5000.,  5000.,  5000.,
+ dampcoef                            = 0.2,    0.2,    0.2
+ khdif                               = 0,      0,      0,
+ kvdif                               = 0,      0,      0,
+ non_hydrostatic                     = .true., .true., .true.,
+ moist_adv_opt                       = 1,      1,      1,     
+ use_theta_m                         = 0,   
+ scalar_adv_opt                      = 1,      1,      1,     
+ hybrid_opt                          = 0
+ /
+
+ &bdy_control
+ spec_bdy_width                      = 5,
+ spec_zone                           = 1,
+ relax_zone                          = 4,
+ specified                           = .true., .false.,.false.,
+ nested                              = .false., .true., .true.,
+ /
+
+ &grib2
+ /
+
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /

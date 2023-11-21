@@ -1,0 +1,6 @@
+Changes for implementing surface current coupling - Modules
+
+I am adding basically two new global variables for ocean atmosphere surface current coupling. I have specified these as u_caw and v_caw (caw - couple air-water). In hindsight 'cao' is an option more consistent with the ice-ocean coupling variable names, but 'water' is more generic for the case of large lakes.
+
+In order to add these two variables we add declarations, dimensioning and initialization of them in mod_ocean.F
+We also define two time averaged versions of the variables (avgUcaw, avgVcaw) in mod_averages.F
