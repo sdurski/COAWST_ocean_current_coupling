@@ -98,4 +98,5 @@ Related to NaNs in the A array. I do not recall exactly what the issue was or if
 !CSD fields, which suggests to me it's a WRF thing. (not quite proper way to check
 !CSD for Nans since a clever compiler might optimize out the ruse above, but  
 !CSD the fortran2003 function ieee_is_nan() requires more 'expensive' compiler switches to be set.)
+
  
