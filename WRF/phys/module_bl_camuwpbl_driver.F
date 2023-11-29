@@ -122,7 +122,10 @@ MODULE module_bl_camuwpbl_driver
 CONTAINS
   
   subroutine camuwpbl(dt,u_phy,v_phy,th_phy,rho,qv_curr,hfx,qfx,ustar,p8w &
-       ,p_phy,z,t_phy,qc_curr,qi_curr,z_at_w,cldfra_old_mp,cldfra,ht      &
+       ,p_phy                                                             &
+!CSD pass ocean surface currents for current coupling
+       ,uoce, voce                                                        &
+       ,z,t_phy,qc_curr,qi_curr,z_at_w,cldfra_old_mp,cldfra,ht            &
        ,rthratenlw,exner,is_CAMMGMP_used                                  &
        ,itimestep,qnc_curr,qni_curr,wsedl3d                               &
        ,ids,ide, jds,jde, kds,kde                                         &
@@ -174,6 +177,10 @@ CONTAINS
 
     real, dimension( ims:ime, kms:kme, jms:jme ), intent(in) :: v_phy       !Y-component of wind (m/s)
     real, dimension( ims:ime, kms:kme, jms:jme ), intent(in) :: u_phy       !X-component of wind (m/s)
+!CSD Added passing of ocean currents for current coupling.
+    real, dimension( ims:ime, jms:jme  ), intent(in) :: voce       !Y-component of ocean surface current (m/s)
+    real, dimension( ims:ime, jms:jme ), intent(in) :: uoce       !X-component of ocean_surface_current (m/s)
+
     real, dimension( ims:ime, kms:kme, jms:jme ), intent(in) :: th_phy      !Potential temperature (K)
     real, dimension( ims:ime, kms:kme, jms:jme ), intent(in) :: rho         !Air density (kg/m3)
     real, dimension( ims:ime, kms:kme, jms:jme ), intent(in) :: qv_curr     !Water vapor mixing ratio - Moisture  (kg/kg)
@@ -244,6 +251,10 @@ CONTAINS
     real(r8) :: wpert(   pcols)                              ! Turbulent velocity excess (m/s)
     real(r8) :: tauresx( pcols)                              ! [Residual stress to be added in vdiff to correct...
     real(r8) :: tauresy( pcols)                              ! for turb stress mismatch between sfc and atm accumulated.] (N/m2)
+
+    real(r8) :: tauox(pcols)                  !CSD  contribution to surface stress from surface ocean currents
+    real(r8) :: tauoy(pcols) 
+
     real(r8) :: ipbl(    pcols)                              ! If 1, PBL is CL, while if 0, PBL is STL.
     real(r8) :: kpblh(   pcols)                              ! Layer index containing PBL top within or at the base interface
     real(r8) :: wstarPBL(pcols)                              ! Convective velocity within PBL (m/s)
@@ -455,11 +466,16 @@ CONTAINS
           sgh(     ncol) = 0.0_r8    ! Standard deviation of orography (m) 
           landfrac(ncol) = 0.0_r8    ! Fraction (unitless)                 
 
-          uMean      = sqrt( u_phy(i,kts,j) * u_phy(i,kts,j) +  v_phy(i,kts,j) * v_phy(i,kts,j) ) ! Mean velocity
+!CSD subtract off the surface current in the calculation of uMean.  
+!CSD ustar which is passed from  sfclayrev is calculated already with surface ocean currents subtracted off. 
+!CSD           uMean      = sqrt( u_phy(i,kts,j) * u_phy(i,kts,j) +  v_phy(i,kts,j) * v_phy(i,kts,j) ) ! Mean velocity
+          uMean      = sqrt( (u_phy(i,kts,j)-uoce(i,j)) * (u_phy(i,kts,j)-uoce(i,j)) +  &  
+                             (v_phy(i,kts,j)-voce(i,j)) * (v_phy(i,kts,j)-voce(i,j)) ) ! Mean velocity
           tauFac     = rho(i,kts,j) * ustar(i,j) *ustar(i,j)/uMean
-
-          taux(ncol) = -tauFac * u_phy(i,kts,j)  ! x surface stress (N/m2) [Formulation obtained from CAM's BareGround.F90]
-          tauy(ncol) = -tauFac * v_phy(i,kts,j)  ! y surface stress (N/m2)
+!CSD also subtract off the surface ocean current in the calculation of tau.
+!CSD this supplies the RHS term for the solver in the explict case (do_iss=0)
+          taux(ncol) = -tauFac * (u_phy(i,kts,j) - uoce(i,j))  ! x surface stress (N/m2) [Formulation obtained from CAM's BareGround.F90]
+          tauy(ncol) = -tauFac * (v_phy(i,kts,j) - voce(i,j)) ! y surface stress (N/m2)
 
           !! Retrieve 'tauresx, tauresy' from from the last timestep
           if( is_first_step ) then
@@ -468,6 +484,8 @@ CONTAINS
           endif
           tauresx(:ncol) = tauresx2d(i,j)
           tauresy(:ncol) = tauresy2d(i,j)
+          tauox(:ncol) = tauFac * uoce(i,j)
+          tauoy(:ncol) = tauFac * voce(i,j)
           
           !! All variables are modified by vertical diffusion
           
@@ -590,10 +608,11 @@ CONTAINS
           !! Note that the output 'tauresx,tauresy' from below subroutines are fully implicit ones.
 
           if( any(fieldlist_wet) ) then
+!CSD send tauox and tauoy to the vdiff solver
              call compute_vdiff( lchnk, pcols, pver, pcnst, ncol, pmid8, pint8, rpdel8, t8, ztodt, &
                   taux, tauy, shflx, cflx, ntop, nbot, kvh, kvm, kvq, cgs, cgh, zi8, ksrftms, qmincg, &
                   fieldlist_wet, wind_tends(:,:,1), wind_tends(:,:,2), cloudtnd, stnd, tautmsx,       &
-                  tautmsy, dtk, topflx, errstring, tauresx, tauresy, 1, do_molec_diff,                &
+                  tautmsy, dtk, topflx, errstring, tauresx, tauresy, tauox, tauoy, 1, do_molec_diff,  &
                   compute_molec_diff, vd_lu_qdecomp)
           end if
 
@@ -610,7 +629,7 @@ CONTAINS
              call compute_vdiff( lchnk, pcols, pver, pcnst, ncol, pmiddry8, pintdry8, rpdeldry8, t8, &
                   ztodt, taux, tauy, shflx, cflx, ntop, nbot, kvh, kvm, kvq, cgs, cgh, zi8, ksrftms,    &
                   qmincg, fieldlist_dry, wind_tends(:,:,1), wind_tends(:,:,2), cloudtnd, stnd, tautmsx, &
-                  tautmsy, dtk, topflx, errstring, tauresx, tauresy, 1, do_molec_diff,                  &
+                  tautmsy, dtk, topflx, errstring, tauresx, tauresy, tauox, tauoy, 1, do_molec_diff,    &
                   compute_molec_diff, vd_lu_qdecomp)
 
              if( errstring .ne. '' ) call wrf_error_fatal(errstring)

@@ -144,9 +144,8 @@ CONTAINS
               ,QNORM, fasdas           &
 !
 ! END FASDAS
-!
                                                                      )
-       
+ 
 !------------------------------------------------------------------
 #if (EM_CORE==1)
    USE module_state_description, ONLY :                            &
@@ -1916,13 +1915,13 @@ CONTAINS
                  )THEN
                  CALL CAMUWPBL(DT=dt,U_PHY=u_phy,V_PHY=v_phy,TH_PHY=th_phy,RHO=rho   &
                       ,QV_CURR=qv_curr,HFX=hfx,QFX=qfx,USTAR=ust,P8W=p8w,P_PHY=p_phy &
+                      ,UOCE=uoce,VOCE=voce                                           & !CSD Ocean currents
                       ,Z=z,T_PHY=t_phy,QC_CURR=qc_curr,QI_CURR=qi_curr,Z_AT_W=z_at_w &
                       ,CLDFRA_OLD_mp=cldfra_old_mp,CLDFRA=cldfra,HT=ht               &
                       ,RTHRATENLW=rthratenlw,EXNER=pi_phy                            &
                       ,is_CAMMGMP_used=is_CAMMGMP_used                               &
                       ,ITIMESTEP=itimestep,QNC_CURR=qnc_curr,QNI_CURR=qni_curr       &
                       ,WSEDL3D=wsedl3d                                               &
-
                       ,IDS=ids,IDE=ide, JDS=jds,JDE=jde, KDS=kds,KDE=kde             &
                       ,IMS=ims,IME=ime, JMS=jms,JME=jme, KMS=kms,KME=kme             &
                       ,ITS=its,ITE=ite, JTS=jts,JTE=jte, KTS=kts,KTE=kte             &
@@ -1985,7 +1984,8 @@ CONTAINS
               ,KPBL2D=kpbl,REGIME=regime                            & 
               ,PSIM=psim,PSIH=psih,XLAND=xland                      &
               ,HFX=hfx,QFX=qfx,TSK=tskold,GZ1OZ0=gz1oz0             &
-              ,WSPD=wspd,BR=br,DT=dtbl,DTMIN=dtmin                  &
+              ,WSPD=wspd,BR=br,UOCE=uoce,VOCE=voce,DT=dtbl          &
+              ,DTMIN=dtmin                                          &
               ,IDS=ids,IDE=ide,JDS=jds,JDE=jde,KDS=kds,KDE=kde      &
               ,IMS=ims,IME=ime,JMS=jms,JME=jme,KMS=kms,KME=kme      &
               ,ITS=its,ITE=ite,JTS=jts,JTE=jte,KTS=kts,KTE=kte      &
@@ -2761,6 +2761,5 @@ CONTAINS
         return
         end subroutine invert
 
-! ===6=8===============================================================72
-
+! ===6=8===============================================================
 END MODULE module_pbl_driver

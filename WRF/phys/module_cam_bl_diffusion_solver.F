@@ -137,7 +137,7 @@
                             zi              , ksrftms            , qmincg        , fieldlist    ,               &
                             u               , v                  , q             , dse          ,               &
                             tautmsx         , tautmsy            , dtk           , topflx       , errstring   , &
-                            tauresx         , tauresy            , itaures       ,                              &
+                            tauresx         , tauresy            , tauox         , tauoy        , itaures     , &
                             do_molec_diff   , compute_molec_diff , vd_lu_qdecomp )
 
     !-------------------------------------------------------------------------- !
@@ -177,6 +177,9 @@
     real(r8), intent(in)    :: ztodt                     ! 2 delta-t [ s ]
     real(r8), intent(in)    :: taux(pcols)               ! Surface zonal      stress. Input u-momentum per unit time per unit area into the atmosphere [ N/m2 ]
     real(r8), intent(in)    :: tauy(pcols)               ! Surface meridional stress. Input v-momentum per unit time per unit area into the atmosphere [ N/m2 ]
+!CSD added 
+    real(r8), intent(in)    :: tauox(pcols)               ! Surface zonal      stress. Input u-momentum per unit time per unit area into the atmosphere [ N/m2 ]
+    real(r8), intent(in)    :: tauoy(pcols)               ! Surface meridional stress. Input v-momentum per unit time per unit area into the atmosphere [ N/m2 ]
     real(r8), intent(in)    :: shflx(pcols)              ! Surface sensible heat flux [ W/m2 ]
     real(r8), intent(in)    :: cflx(pcols,ncnst)         ! Surface constituent flux [ kg/m2/s ]
     real(r8), intent(in)    :: zi(pcols,pver+1)          ! Interface heights [ m ]
@@ -415,6 +418,9 @@
            u(:ncol,pver) = u(:ncol,pver) + tmp1(:ncol)*tauresx(:ncol)*ramda
            v(:ncol,pver) = v(:ncol,pver) + tmp1(:ncol)*tauresy(:ncol)*ramda
 
+         !CSD Add in effect of surface ocean currents.
+           u(:ncol,pver) = u(:ncol,pver) + tmp1(:ncol)*tauox(:ncol)
+           v(:ncol,pver) = v(:ncol,pver) + tmp1(:ncol)*tauoy(:ncol)
          ! Vertical integration of momentum after adding explicit residual stress
          ! into the lowest model layer.
 
@@ -451,7 +457,7 @@
            ksrf(:ncol) = ksrftms(:ncol) 
 
          ! 2. Do 'normal stress' explicitly
-
+         !CSD note that effect of surface ocean currents is incorporated into taux term here.
            u(:ncol,pver) = u(:ncol,pver) + tmp1(:ncol)*taux(:ncol)
            v(:ncol,pver) = v(:ncol,pver) + tmp1(:ncol)*tauy(:ncol)
 

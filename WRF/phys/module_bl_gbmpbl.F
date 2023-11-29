@@ -46,6 +46,7 @@ CONTAINS
        dz8w,z,PSFC,TKE_PBL,RTHRATEN,                              &
        ZNT,UST,ZOL,HOL,PBL,KPBL2D,REGIME,PSIM,PSIH,               & 
        XLAND,HFX,QFX,TSK,GZ1OZ0,WSPD,BR,                          &
+       UOCE, VOCE,                                                &
        DT,DTMIN,                                                  &
        ids,ide, jds,jde, kds,kde,                                 &
        ims,ime, jms,jme, kms,kme,                                 &
@@ -205,7 +206,11 @@ CONTAINS
 
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
                 INTENT(INOUT)   ::                            ZOL
-                                                                      
+ 
+      REAL,     DIMENSION( ims:ime, jms:jme )                    , &
+                INTENT(IN   )   ::                           UOCE, &
+                                                             VOCE
+                                                                     
       REAL,     DIMENSION( ims:ime, kms:kme, jms:jme )           , &
                 INTENT(IN   )   ::                            U3D, &
                                                               V3D
@@ -262,6 +267,7 @@ CONTAINS
             HOL(ims,j),PBL(ims,j),KPBL2D(ims,j),PSIM(ims,j),     &
             PSIH(ims,j),XLAND(ims,j),HFX(ims,j),QFX(ims,j),      &
             TSK(ims,j),GZ1OZ0(ims,j),WSPD(ims,j),BR(ims,j),      &
+            UOCE(ims,j), VOCE(ims,j),                            &
             DT,DTMIN,                                            &
             ids,ide, jds,jde, kds,kde,                           &
             ims,ime, jms,jme, kms,kme,                           &
@@ -297,6 +303,7 @@ CONTAINS
        dz8w2d,z2d,PSFCPA,                               &
        ZNT,UST,ZOL,HOL,PBL,kpbl1d,PSIM,PSIH,            &
        XLAND,HFX,QFX,TSK,GZ1OZ0,WSPD,BR,                &
+       UOCE,VOCE,                                       &
        DT,DTMIN,                                        &
        ids,ide, jds,jde, kds,kde,                       &
        ims,ime, jms,jme, kms,kme,                       &
@@ -349,6 +356,9 @@ CONTAINS
          PSIH
 
     REAL,     DIMENSION( ims:ime ), INTENT(INOUT)   ::      WSPD
+
+    REAL,     DIMENSION( ims:ime ), INTENT(IN   )   ::      UOCE, &
+                                                            VOCE
 
     REAL,     DIMENSION( ims:ime ), INTENT(IN   )   ::    GZ1OZ0, &
          BR
@@ -531,7 +541,10 @@ CONTAINS
        !     DENSITY AT THE SURFACE
        RHOXSF=(PRESFL(KTE+1))/(r_d*TVX(kte))
        !     More surface variables
-       WSPD1(i)=SQRT(UX(KTE)*UX(KTE)+VX(KTE)*VX(KTE))+1.e-4
+!CSD subtract ocean surface current  
+!CSD       WSPD1(i)=SQRT(UX(KTE)*UX(KTE)+VX(KTE)*VX(KTE))+1.e-4
+       WSPD1(i)=SQRT((UX(KTE)-UOCE(i))*(UX(KTE)-UOCE(i)) +       &
+     &               (VX(KTE)-VOCE(i))*(VX(KTE)-VOCE(i)))+1.e-4
        THV0=THGB*(1.+ep_1*Q0S)
        DTHV=(THVX(KTE)-THV0)
        gothv = g/thvx(kte)
@@ -685,8 +698,11 @@ CONTAINS
           !     No flux out top, so no (k.eq.1)
           if(k.eq.kte)then
              !     At surface
-             UFLXP=-USTX*USTX*UX(KTE)/WSPD1(i)
-             VFLXP=-USTX*USTX*VX(KTE)/WSPD1(i)
+!CSD Subtract off ocean current from bottom level velocity
+!CSD            UFLXP=-USTX*USTX*UX(KTE)/WSPD1(i)
+!CSD            VFLXP=-USTX*USTX*VX(KTE)/WSPD1(i)
+             UFLXP=-USTX*USTX*(UX(KTE)-UOCE(i))/WSPD1(i)
+             VFLXP=-USTX*USTX*(VX(KTE)-VOCE(i))/WSPD1(i)
              !     Include surface momentum fluxes
              rimp1(k) = ux(k) + dt2 *  &
                   uflxp * (rhoxsf*rrhoxhl(k)) *rdzq(kte)

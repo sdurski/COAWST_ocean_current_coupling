@@ -690,7 +690,7 @@
                                zi      , ksrftms  , zero     , fieldlist_wet,             &
                                ufd     , vfd      , qtfd     , slfd         ,             &
                                jnk1d   , jnk1d    , jnk2d    , jnk1d        , errstring , &
-                               tauresx , tauresy  , 0        , .false. )
+                               tauresx , tauresy  , jnk1d, jnk1d, 0        , .false. )
 
          ! Retrieve (tfd,qvfd,qlfd) from (slfd,qtfd) in order to 
          ! use 'trbintd' at the next iteration.

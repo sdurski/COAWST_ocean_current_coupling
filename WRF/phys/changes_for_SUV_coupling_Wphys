@@ -1,5 +1,6 @@
 This directory contains the surface boundary layers schemes. Some of these schems already incorporate the influence of ocean surface currents while others do not. It is not clear that those that do incorporate the ocean surface current do so in quite the same way. 
 
+----------------------------------YSU-----------------------------------------------------------
 The first bl scheme we implement the coupling for is the YSU (Yonsei University) scheme. This scheme required no modification as it already incorporated the uoce, and voce variables. The variables are subtracted from the level k=1 u and v velocites to form a variable wspd1. Below uox, vox are uoce and voce.
 
    wspd1(i) = sqrt( (ux(i,1)-uox(i))*(ux(i,1)-uox(i)) + (vx(i,1)-vox(i))*(vx(i,1)-vox(i)) )+1.e-9
@@ -68,6 +69,25 @@ wspd10 is only used in YSU in one place, to determine if the model meets a stabl
 I rationalize that uoce and voce being specifically included in the routine, but not included where wspd10 is used is intentional and that the scheme is accounting for the effect of the surface current as intended.  
 
 The implementation looks like Lemarie's description of the necessary additions to add the ocean current cuoupling PLUS something. I think this additional bit is related to the convective paramterization within the YSU scheme.
+
+-------------------------------------GBM----------------------------------------------------------
+The GBM scheme had no implementation of ocean current coupling. Like other schemes it utilizes a pretty typical implicit time stepping of the mixing. However the input to the lefthand side of the tridiagonal solver is perhaps a bit atypical. In general One can form the upper diagonal(ud) and the lower diagonal(ld) of the tridiagonal system with staggered level Kd/dz terms and formulate the diagonal as 
+1-ud-ld. In this case typically the ld might be the bottom drag, excluding the u(n+1) term that we are solving for. Or ..as written in the Lemarie note  ustar^2/wspd*dt/dz.  If you don't include this term and set ld(k=1)=0, then you're basically treating the lowest difference estimate purely explicitly on the RHS of the equation. This is what ROMS-ocean does..It solves for all the interior layers implicitly but places bottom and surface stresses as explicit terms. ..I'm not sure why that is, maybe because we don't calculate a u*? But anyway tHIS is what the GBM scheme does as well.  
+
+So the modification for this scheme amounts to correcting the wspd1 estimate by subtracting off the surface ocean current estimates and adding the RHS term NOT as written by LeMarie in his note but rather as  ustar^2/wspd*(ua-uo)*dt/dz for the bottom level (with ua here on rhs, rather than lhs). 
+
+!CSD subtract ocean surface current  
+!CSD       WSPD1(i)=SQRT(UX(KTE)*UX(KTE)+VX(KTE)*VX(KTE))+1.e-4
+       WSPD1(i)=SQRT((UX(KTE)-UOCE(i))*(UX(KTE)-UOCE(i)) +       &
+     &               (VX(KTE)-VOCE(i))*(VX(KTE)-VOCE(i)))+1.e-4
+ 
+
+!CSD Subtract off ocean current from bottom level velocity
+!CSD            UFLXP=-USTX*USTX*UX(KTE)/WSPD1(i)
+!CSD            VFLXP=-USTX*USTX*VX(KTE)/WSPD1(i)
+             UFLXP=-USTX*USTX*(UX(KTE)-UOCE(i))/WSPD1(i)
+             VFLXP=-USTX*USTX*(VX(KTE)-VOCE(i))/WSPD1(i)
+ 
 
 
 
