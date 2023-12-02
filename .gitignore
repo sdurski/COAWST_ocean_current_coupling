@@ -17,3 +17,4 @@ namelist.input.backup*
 Projects/CCS/coawstM
 Projects/CCS/namelist.output
 Projects/CCS/CCS_output/*.nc
+Build_roms/
