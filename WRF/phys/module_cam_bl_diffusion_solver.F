@@ -178,8 +178,8 @@
     real(r8), intent(in)    :: taux(pcols)               ! Surface zonal      stress. Input u-momentum per unit time per unit area into the atmosphere [ N/m2 ]
     real(r8), intent(in)    :: tauy(pcols)               ! Surface meridional stress. Input v-momentum per unit time per unit area into the atmosphere [ N/m2 ]
 !CSD added 
-    real(r8), intent(in)    :: tauox(pcols)               ! Surface zonal      stress. Input u-momentum per unit time per unit area into the atmosphere [ N/m2 ]
-    real(r8), intent(in)    :: tauoy(pcols)               ! Surface meridional stress. Input v-momentum per unit time per unit area into the atmosphere [ N/m2 ]
+    real(r8), intent(in)    :: tauox(pcols)               ! Surface zonal      stress. over ocean 
+    real(r8), intent(in)    :: tauoy(pcols)               ! Surface meridional stress. over ocean
     real(r8), intent(in)    :: shflx(pcols)              ! Surface sensible heat flux [ W/m2 ]
     real(r8), intent(in)    :: cflx(pcols,ncnst)         ! Surface constituent flux [ kg/m2/s ]
     real(r8), intent(in)    :: zi(pcols,pver+1)          ! Interface heights [ m ]

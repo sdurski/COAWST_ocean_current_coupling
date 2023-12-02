@@ -91,4 +91,47 @@ So the modification for this scheme amounts to correcting the wspd1 estimate by 
 
 
 
-  
+ -------------------------------------UW----------------------------------------------------------
+The CAMUWPBL scheme is one of the more complex schemes. It states that surface stress is determiend 
+fully implicitly which tells us that LeMarie's RHS term can be applied straighforwardly. However the 
+surface ocean current isn't read into this scheme anywhere. Additionally the approximation involves 
+iterative procedure where the effect of vertical diffsuion is solved for with a call to compute_vdiff 
+from module_cam_pbl_driver, but subsequently an eddy viscosity is determined, and compute_vdiff is called 
+again from within compute_eddy_diff. So in addition to properly formulating the RHS term (called tauo[xy], we need to pass 
+it to a number of subroutines. If we don't pass it correctly the WRF compilation is a nightmare, as it continues past the point where it first encounters an error and tries to build object after object on top of the one with the errors in it, until it finally balks with undefined symbols at the library build stage.  
+The routines that are modified include 
+module_bl_camuwpbl_driver.F
+module_cam_bl_diffusion_solver.F
+module_pbl_driver.F
+module_cam_bl_eddy_diff.F ** modified only in latest iteration of the algorithm 11.28.23
+
+In our original implementation of this scheme we correctly passed tauox to compute_vdiff in the calls from camuwpbl_driver but we ppassed zero vectors in the call within cam_bl_eddy_diff
+
+in mod_camuwpbl_driver we add the ocean currents to Umean and formulate the Lemarie-esque RHS term.
+!CSD subtract off the surface current in the calculation of uMean.  
+!CSD ustar which is passed from  sfclayrev is calculated already with surface ocean currents subtracted off. 
+!CSD           uMean      = sqrt( u_phy(i,kts,j) * u_phy(i,kts,j) +  v_phy(i,kts,j) * v_phy(i,kts,j) ) ! Mean velocity
+          uMean      = sqrt( (u_phy(i,kts,j)-uoce(i,j)) * (u_phy(i,kts,j)-uoce(i,j)) +  &  
+                             (v_phy(i,kts,j)-voce(i,j)) * (v_phy(i,kts,j)-voce(i,j)) ) ! Mean velocity
+          tauFac     = rho(i,kts,j) * ustar(i,j) *ustar(i,j)/uMean
+!CSD also subtract off the surface ocean current in the calculation of tau.
+!CSD this supplies the RHS term for the solver in the explict case (do_iss=0)
+          taux(ncol) = -tauFac * (u_phy(i,kts,j) - uoce(i,j))  ! x surface stress (N/m2) [Formulation obtained from CAM's BareGround.F90]
+          tauy(ncol) = -tauFac * (v_phy(i,kts,j) - voce(i,j)) ! y surface stress (N/m2)
+
+          !! Retrieve 'tauresx, tauresy' from from the last timestep
+          if( is_first_step ) then
+             tauresx2d(i,j) = 0._r8
+             tauresy2d(i,j) = 0._r8
+          endif
+          tauresx(:ncol) = tauresx2d(i,j)
+          tauresy(:ncol) = tauresy2d(i,j)
+          tauox(:ncol) = tauFac * uoce(i,j)
+          tauoy(:ncol) = tauFac * voce(i,j)
+
+THe changes to other routines amount to passing the tauox and tauoy variables in, declaring them and adding them where appropriate to the RHS (in compute_diff.F)
+ 
+A comparison of the kinetic energy reduction with and without inclusion of the surface current coupling in the compute_vdiff call within module_cam_bl_eddy_diff, yields 4.8% reduction without, 4.5% reduction with. 
+
+
+-----------------------------------------------myj--------------------------------------------------------------------

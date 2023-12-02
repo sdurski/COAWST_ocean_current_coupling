@@ -347,11 +347,12 @@
                                 pcols  , pver   , ncol     , t       , qv       , ztodt   ,         &
                                 ql     , qi     , s        , rpdel   , cldn     , qrl     , wsedl , &
                                 z      , zi     , pmid     , pi      , u        , v       ,         &
-                                taux   , tauy   , shflx    , qflx    , wstarent , nturb   ,         &
+                                taux   , tauy   , tauox    , tauoy   , shflx    , qflx    ,         &
+                                wstarent , nturb   ,         &
                                 ustar  , pblh   , kvm_in   , kvh_in  , kvm_out  , kvh_out , kvq   , & 
                                 cgh    , cgs    , tpert    , qpert   , wpert    , tke     , bprod , &
                                 sprod  , sfi    , qsat     , kvinit  ,                              &
-                                tauresx, tauresy, ksrftms  ,                                        &
+                                tauresx, tauresy, ksrftms  ,                   &
                                 ipbl   , kpblh  , wstarPBL , turbtype, sm_aw )
        
     !-------------------------------------------------------------------- ! 
@@ -404,6 +405,8 @@
     real(r8), intent(in)    :: v(pcols,pver)             ! Meridional velocity [ m/s ]
     real(r8), intent(in)    :: taux(pcols)               ! Zonal wind stress at surface [ N/m2 ]
     real(r8), intent(in)    :: tauy(pcols)               ! Meridional wind stress at surface [ N/m2 ]
+    real(r8), intent(in)    :: tauox(pcols)              ! zonal ocean current effect
+    real(r8), intent(in)    :: tauoy(pcols)              ! Meridional ocean current effect
     real(r8), intent(in)    :: shflx(pcols)              ! Sensible heat flux at surface [ unit ? ]
     real(r8), intent(in)    :: qflx(pcols)               ! Water vapor flux at surface [ unit ? ]
     real(r8), intent(in)    :: kvm_in(pcols,pver+1)      ! kvm saved from last timestep [ m2/s ]
@@ -690,7 +693,7 @@
                                zi      , ksrftms  , zero     , fieldlist_wet,             &
                                ufd     , vfd      , qtfd     , slfd         ,             &
                                jnk1d   , jnk1d    , jnk2d    , jnk1d        , errstring , &
-                               tauresx , tauresy  , jnk1d, jnk1d, 0        , .false. )
+                               tauresx , tauresy  , tauox    , tauoy, 0        , .false. )
 
          ! Retrieve (tfd,qvfd,qlfd) from (slfd,qtfd) in order to 
          ! use 'trbintd' at the next iteration.

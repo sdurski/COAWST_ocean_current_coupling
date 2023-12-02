@@ -556,10 +556,12 @@ CONTAINS
              kvh_in(:ncol,:) = kvh(:ncol,:) 
              call compute_eddy_diff( lchnk  , pcols  , pver   , ncol   , t8      , cloud(:,:,1)   , ztodt    ,           &
                   cloud(:,:,2), cloud(:,:,3), s8     , rpdel8 , cldn8  , qrl8    , wsedl8         , zm8      , zi8     , &
-                  pmid8       , pint8       , u8     , v8     , taux   , tauy    , shflx          , cflx(:,1), wstarent, &
-                  nturb       , ustar8      , pblh   , kvm_in , kvh_in , kvm     , kvh            , kvq      , cgh     , &                                                     
+                  pmid8       , pint8       , u8     , v8     , taux   , tauy    , tauox          , tauoy    , shflx   , &
+                  cflx(:,1)   , wstarent    , &
+                  nturb       , ustar8      , pblh   , kvm_in , kvh_in , kvm     , kvh            , kvq      , cgh     , & 
                   cgs         , tpert       , qpert  , wpert  , tke8   , bprod   , sprod          , sfi      , fqsatd  , &
-                  kvinit      , tauresx     , tauresy, ksrftms, ipbl(:), kpblh(:), wstarPBL(:)    , turbtype , smaw      )
+                  kvinit      , tauresx     , tauresy, ksrftms , ipbl(:)       , kpblh(:)  ,           &
+                  wstarPBL(:) , turbtype    , smaw      )
 
              !! ----------------------------------------------- !       
              !! Store TKE in pbuf for use by shallow convection !
