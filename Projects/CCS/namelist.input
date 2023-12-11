@@ -18,7 +18,7 @@
  interval_seconds                    = 21600
  input_from_file                     = .true.,.true.,.true.,
  history_interval                    = 7200,  7200,   7200,
- history_outname                     = "CCS_output/wrf_cpld_CCS8_uwNnw_d<domain>_<date>"
+ history_outname                     = "CCS_output/wrf_cpld_CCS8_myj_d<domain>_<date>"
  frames_per_outfile                  = 8 ,   8, 1000,
  restart                             = .false.,
  restart_interval                    = 43200,
@@ -78,7 +78,7 @@
  radt                                = 30,    30,    30,
  sf_sfclay_physics                   = 1,     1,     1,
  sf_surface_physics                  = 2,     2,     2,
- bl_pbl_physics                      = 9,     9,     9,
+ bl_pbl_physics                      = 2,     2,     2,
  bldt                                = 0,     0,     0,
  cu_physics                          = 1,     1,     0,
  cudt                                = 5,     5,     5,

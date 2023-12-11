@@ -3786,8 +3786,10 @@ CALL lsm_mosaic_init(IVGTYP,config_flags%ISWATER,config_flags%ISURBAN,config_fla
 
 #endif
       CASE (MYJPBLSCHEME)
-           if(isfc .ne. 2)CALL wrf_error_fatal &
-            ( 'module_physics_init: use myjsfc scheme for this pbl option' )
+!CSD           if(isfc .ne. 2)CALL wrf_error_fatal &
+!CSD            ( 'module_physics_init: use myjsfc scheme for this pbl option' )
+           if(isfc .ne. 2 .and.isfc .ne.1 )CALL wrf_error_fatal &
+            ( 'module_physics_init: use surface scheme 1 or 2 for this pbl option' )
           IF ((SF_URBAN_PHYSICS.eq.2).OR.(SF_URBAN_PHYSICS.EQ.3)) THEN
            CALL myjurbinit(RUBLTEN,RVBLTEN,RTHBLTEN,RQVBLTEN, &
                         TKE_PBL,EXCH_H,restart,               &

@@ -18,7 +18,9 @@ CONTAINS
                  ,ust,pblh,hfx,qfx,grdflx,hpbl_hold                &
                  ,u_phy,v_phy,w,th_phy,rho                         &
                  ,p_phy,pi_phy,p8w,t_phy,dz8w,z                    &
-                 ,exch_h,exch_m,akhs,akms                          &
+                 ,exch_h                                           &
+                 ,exch_m,exch_q,GH_pbl,N2_pbl,Sm_pbl,Sh_pbl        &  !CSD NPerlin 4SFCLAY1
+                 ,akhs,akms                                        &
                  ,thz0,qz0,uz0,vz0,qsfc,f                          &
                  ,lowlyr,u10,v10,uoce,voce,t2                      &
                  ,psim,psih,fm,fhh,gz1oz0, wspd,br,chklowq         &
@@ -409,8 +411,9 @@ CONTAINS
   &                                    i_start,i_end,j_start,j_end
 
    INTEGER,    INTENT(IN   )    ::     itimestep,STEPBL
-   INTEGER,    DIMENSION( ims:ime , jms:jme ),                    &
-               INTENT(IN   )    ::                        LOWLYR
+
+   INTEGER,    DIMENSION( ims:ime , jms:jme ),                    &  !CSD Nperlin
+               INTENT(INOUT)    ::                        LOWLYR
 !
    LOGICAL,      INTENT(IN   )    ::   warm_rain
    LOGICAL,      INTENT(IN   )    ::   is_CAMMGMP_used !BSINGH:01/31/2013: Added for CAMUWPBL
@@ -608,6 +611,8 @@ CONTAINS
 !
    REAL,       DIMENSION( ims:ime, kms:kme, jms:jme ),            &
                INTENT(OUT)    ::                          EL_PBL
+   REAL,       DIMENSION( ims:ime, kms:kme, jms:jme ),            & !CSD NPerlin 4SFCLAY1
+               INTENT(OUT)  :: EXCH_Q,GH_PBL,N2_PBL,SM_PBL,SH_PBL 
 
    REAL ,                             INTENT(IN   )  ::  u_frame, &
                                                          v_frame
@@ -1425,11 +1430,15 @@ CONTAINS
               ,QV=qv_curr,QCW=qc_curr,QCI=qi_curr,QCS=qs_curr       & !BSF
               ,QCR=qr_curr,QCG=qg_curr                              & !BSF
               ,U=u_phy,V=v_phy,RHO=rho                              &
+              ,UOCE=UOCE,VOCE=VOCE                                  & !CSD ocean currents
               ,TSK=tsk,QSFC=qsfc,CHKLOWQ=chklowq,THZ0=thz0          &
               ,QZ0=qz0,UZ0=uz0,VZ0=vz0                              &
               ,LOWLYR=lowlyr                                        &
               ,XLAND=xland,SICE=xice,SNOW=snow                      &
-              ,TKE_MYJ=tke_pbl,EXCH_H=exch_h,USTAR=ust,ZNT=znt      &
+              ,TKE_MYJ=tke_pbl,EXCH_H=exch_h,EXCH_M=exch_m          & !CSD NPerlin 4SFCLAY1
+              ,EXCH_Q=exch_q,GH_MYJ=gh_pbl,N2_MYJ=n2_pbl            & !Nperlin
+              ,SM_MYJ=Sm_pbl,SH_MYJ=sh_pbl                          & !CSD  
+              ,USTAR=ust,ZNT=znt                                    &
               ,EL_MYJ=el_pbl,PBLH=pblh,KPBL=kpbl,CT=ct              &
               ,AKHS=akhs,AKMS=akms,ELFLX=lh,MIXHT=mixht             &  
               ,RUBLTEN=rublten,RVBLTEN=rvblten,RTHBLTEN=rthblten    &
@@ -1439,6 +1448,8 @@ CONTAINS
               ,IDS=ids,IDE=ide,JDS=jds,JDE=jde,KDS=kds,KDE=kde      &
               ,IMS=ims,IME=ime,JMS=jms,JME=jme,KMS=kms,KME=kme      &
               ,ITS=its,ITE=ite,JTS=jts,JTE=jte,KTS=kts,KTE=kte      &
+              ,MYJSFC=flag_myjsfc,ITIMESTEP=itimestep               & !CSD NPerlin 4SFCLAY
+              ,PSIM=psim,PSIH=psih,GZ1oZ0=gz1oz0,CHS=ch,WSPD=wspd   & !CSD NPerlin 4SFCLAY
                                                                     )
             ELSE !(SF_URBAN_PHYSICS.EQ.2)
 ! Bep changes begin

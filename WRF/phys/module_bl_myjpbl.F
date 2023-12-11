@@ -130,15 +130,22 @@
 !----------------------------------------------------------------------
       SUBROUTINE MYJPBL(DT,STEPBL,HT,DZ                                &
      &                 ,PMID,PINT,TH,T,EXNER,QV,QCW,QCI,QCS,QCR,QCG    & !BSF
-     &                 ,U,V,RHO,TSK,QSFC,CHKLOWQ,THZ0,QZ0,UZ0,VZ0      & !BSF
+     &                 ,U,V,RHO                                        & !BSF
+     &                 ,UOCE,VOCE                                      &
+     &                 ,TSK,QSFC,CHKLOWQ,THZ0,QZ0,UZ0,VZ0              & !BSF
      &                 ,LOWLYR,XLAND,SICE,SNOW                         &
-     &                 ,TKE_MYJ,EXCH_H,USTAR,ZNT,EL_MYJ,PBLH,KPBL,CT   &
+     &                 ,TKE_MYJ,EXCH_H                                 &
+     &                 ,EXCH_M,EXCH_Q,GH_MYJ,N2_MYJ                    & !CSD Nperlin  4SFCLAY1
+     &                 ,SM_MYJ,SH_MYJ                                  & !CSD Nperlin  4SFCLAY1
+     &                 ,USTAR,ZNT,EL_MYJ,PBLH,KPBL,CT                  &
      &                 ,AKHS,AKMS,ELFLX,MIXHT                          &   !PLee (3/07)
      &                 ,RUBLTEN,RVBLTEN,RTHBLTEN,RQVBLTEN,RQCBLTEN     &
      &                 ,RQIBLTEN,RQSBLTEN,RQRBLTEN,RQGBLTEN            & !BSF
      &                 ,IDS,IDE,JDS,JDE,KDS,KDE                        &
      &                 ,IMS,IME,JMS,JME,KMS,KME                        &
-     &                 ,ITS,ITE,JTS,JTE,KTS,KTE)
+     &                 ,ITS,ITE,JTS,JTE,KTS,KTE                        &
+     &                 ,MYJSFC,ITIMESTEP                               & !CSD NPerlin 4SFCLAY1
+     &                 ,PSIM,PSIH,GZ1oZ0,CHS,WSPD )                      !CSD NPerlin 4SFCLAY1
 !----------------------------------------------------------------------
 !
       IMPLICIT NONE
@@ -150,7 +157,7 @@
 !
       INTEGER,INTENT(IN) :: STEPBL
 
-      INTEGER,DIMENSION(IMS:IME,JMS:JME),INTENT(IN) :: LOWLYR
+      INTEGER,DIMENSION(IMS:IME,JMS:JME),INTENT(INOUT) :: LOWLYR      !CSD Nperlin 4SFCLAY1
 !
       INTEGER,DIMENSION(IMS:IME,JMS:JME),INTENT(OUT) :: KPBL
 !
@@ -164,6 +171,10 @@
      &                                                     ,RHO        &  !BSF
      &                                                     ,T,TH,U,V
 !
+!CSD 
+      REAL,     DIMENSION( IMS:IME, JMS:JME )                        , &
+        INTENT(IN   )   :: UOCE, VOCE
+
       REAL,OPTIONAL,INTENT(IN),DIMENSION(IMS:IME,KMS:KME,JMS:JME)::    &  !BSF
                                                 QV,QCW,QCI,QCS,QCR,QCG    !BSF
 !
@@ -186,9 +197,19 @@
 !
       REAL,DIMENSION(IMS:IME,KMS:KME,JMS:JME)                          &
      &    ,INTENT(INOUT) ::                    EXCH_H,TKE_MYJ
+
+      REAL,DIMENSION(IMS:IME,KMS:KME,JMS:JME) ,INTENT(OUT) ::          &  !CSD Nperlin 4SFCLAY1
+     &     EXCH_M,EXCH_Q,GH_MYJ,N2_MYJ,SM_MYJ,SH_MYJ
+
 !
       REAL,DIMENSION(IMS:IME,JMS:JME),INTENT(IN) :: CHKLOWQ,ELFLX
 !
+      INTEGER,INTENT(IN) :: ITIMESTEP                                      !CSD NPerlin 4SFCLAY1
+      LOGICAL,INTENT(IN) :: MYJSFC                                         !CSD Nperlin 4SFCLAY1
+      REAL, DIMENSION(IMS:IME,JMS:JME),INTENT(IN) :: PSIM,PSIH,GZ1oZ0      !CSD Nperlin 4SFCLAY1
+      REAL, DIMENSION(IMS:IME,JMS:JME),INTENT(IN) :: CHS,WSPD              !CSD Nperlin 4SFCLAY1
+
+
 !----------------------------------------------------------------------
 !***
 !***  LOCAL VARIABLES
@@ -230,6 +251,8 @@
       REAL, DIMENSION(NSPECS:NSPECE,KTS:KTE) :: SPECIES
 !
       REAL,DIMENSION(KTS:KTE-1) :: AKHK,AKMK,EL,GH,GM
+
+      REAL,DIMENSION(KTS:KTE-1) :: S_M,S_H              !CSD Nperlin
 !
       REAL,DIMENSION(KTS:KTE+1) :: ZHK
 !
@@ -242,6 +265,14 @@
       REAL,DIMENSION(ITS:ITE,KTS:KTE-1,JTS:JTE) :: AKH,AKM
 !
       REAL,DIMENSION(ITS:ITE,KTS:KTE+1,JTS:JTE) :: ZINT
+!
+      INTEGER        :: NTSD                       ! NPerlin
+      REAL           :: Z0,THLOW,CXCHS,USTARK,RDZ  ! NPerlin
+      REAL           :: ZU,WGHT,RWGH               ! NPerlin
+      REAL           :: ZT,WGHTT,ZQ,WGHTQ          ! NPerlin
+      REAL           :: PSIX,PSIT                  ! NPerlin
+      REAL,PARAMETER :: EXCMS=0.0001               ! NPerlin
+!
 !
 !***  Begin debugging
       REAL :: ZSL_DIAG
@@ -339,7 +370,25 @@
       ENDDO
 !
       EL_MYJ(its:ite,:,jts:jte) = 0.
+      EXCH_M(its:ite,:,jts:jte) = 0.     !CSD NPerlin 4SFCLAY1
+      EXCH_H(its:ite,:,jts:jte) = 0.     !CSD
+      EXCH_Q(its:ite,:,jts:jte) = 0.     !CSD 
+      GH_MYJ(its:ite,:,jts:jte) = 0.     !
+      N2_MYJ(its:ite,:,jts:jte) = 0.     !
+      SM_MYJ(its:ite,:,jts:jte) = 0.     !
+      SH_MYJ(its:ite,:,jts:jte) = 0.     !
 !
+      IF (.not.MYJSFC) THEN              !CSD NPerlin 4SFCLAY1
+       NTSD = ITIMESTEP                  !CSD
+! NPerlin: 12/2011 : for sf_sfclay_physics = 1   
+! Initialize LOWLYR variable, usually done in MYJSFCINIT  
+        DO J=JTS,JTE                               !CSD  Np
+          DO I=ITS,ITE                             !CSD  Np
+!***  ASSUME SIGMA MODE FOR LOWEST MODEL LAYER
+            LOWLYR(I,J)=1  ! similar to MYJSFCINIT   !CSD Np
+          ENDDO                                    !CSD   Np
+        ENDDO                                      !CSD   Np
+      ENDIF                                        !CSD   Np
 !----------------------------------------------------------------------
       setup_integration:  DO J=JTS,JTE
 !----------------------------------------------------------------------
@@ -424,7 +473,7 @@
 !***
 !***  FIND THE EXCHANGE COEFFICIENTS IN THE FREE ATMOSPHERE
 !***
-          CALL DIFCOF(LMH,LMXL,GM,GH,EL,TK,Q2K,ZHK,AKMK,AKHK      &
+          CALL DIFCOF(LMH,LMXL,GM,GH,EL,TK,Q2K,ZHK,AKMK,AKHK,S_M,S_H   &   !CSD Nperlin 4SFCLAY1
      &               ,IDS,IDE,JDS,JDE,KDS,KDE                          &
      &               ,IMS,IME,JMS,JME,KMS,KME                          &
      &               ,ITS,ITE,JTS,JTE,KTS,KTE,PRINT_DIAG)   ! debug
@@ -460,7 +509,14 @@
             KFLIP=KTE+1-K
             Q2K(KFLIP)=AMAX1(Q2K(KFLIP),EPSQ2)
             TKE_MYJ(I,K,J)=0.5*Q2K(KFLIP)
-            IF(KFLIP<KTE)EL_MYJ(I,K,J)=EL(KFLIP)   ! EL IS NOT DEFINED AT KTE (ground surface)
+            IF(KFLIP<KTE) THEN 
+               EL_MYJ(I,K,J)=EL(KFLIP)   ! EL IS NOT DEFINED AT KTE (ground surface)
+               SM_MYJ(I,K,J)=S_M(KFLIP)     !CSD nperlin 09/2012 4SFCLAY4
+               SH_MYJ(I,K,J)=S_H(KFLIP)     ! nperlin 09/2012
+               N2_MYJ(I,K,J)=GH(KFLIP)*BTG  ! nperlin 09/2012
+               GH_MYJ(I,K,J)=-GH(KFLIP)*BTG*EL(KFLIP)*                  &
+     &                        EL(KFLIP)/Q2K(KFLIP)
+            ENDIF 
           ENDDO
 !
         ENDDO
@@ -477,6 +533,123 @@
         THSK(I,J)=TSK(I,J)*(1.E5/PSFC)**CAPA
       ENDDO
       ENDDO
+!
+      IF (.not.MYJSFC) THEN
+!CSD  NPerlin: 12/2011 : for sf_sfclay_physics = 1
+! If SFCLAY surface layer option has been used instead of MYJSFC,
+! add calculations of variables AKHS, AKMS, THZ0, QZ0, UZ0, VZ0, 
+! which are not computed by the SFCLAY scheme, but computed by MYJSFC
+! and needed by MYJPBL scheme
+!
+       DO J=JTS,JTE
+        DO I=ITS,ITE
+           RDZ= 1./DZ(I,1,J)
+           CXCHS = EXCMS * RDZ
+           USTARK=USTAR(I,J) * VKARMAN
+#if ( NMM_CORE == 1 )
+           if(NTSD+1.eq.1) then
+#else
+           IF(NTSD==1)THEN
+#endif
+              AKMS(I,J)=CXCHS
+              AKHS(I,J)=CXCHS
+           ELSE 
+              PSIX = GZ1OZ0(I,J)-PSIM(I,J)   ! NPerlin: adapted from SFCLAY1D
+!              PSIT = AMAX1(GZ1OZ0(I,J)-PSIH(I,J),2.) ! NPerlin adapted/SFCLAY1D
+              AKMS(I,J) = MAX(USTARK/PSIX, CXCHS)
+!              AKHS(I,J) = MAX(USTARK/PSIT, CXCHS)
+              AKHS(I,J) = MAX(CHS(I,J), CXCHS)
+           ENDIF
+!
+           SEAMASK=XLAND(I,J)-1.
+           PSFC=PINT(I,LOWLYR(I,J),J)
+           ULOW=U(I,LOWLYR(I,J),J)
+           VLOW=V(I,LOWLYR(I,J),J)
+           RATIOMX=QV(I,LOWLYR(I,J),J)
+           QLOW=RATIOMX/(1.+RATIOMX)
+           THLOW = TH(I,LOWLYR(I,J),J)
+!
+!----------------------------------------------------------------------
+!***  SEA POINTS                                          ! from module_sf_myjsfc.F
+           Z0=ZNT(I,J)
+           IF(SEAMASK>0.5)THEN
+!***  VISCOUS SUBLAYER, JANJIC MWR 1994
+             IF(USTAR(I,J)<USTC)THEN
+               IF(USTAR(I,J)<USTR)THEN
+!
+                 ZU=FZU1*SQRT(SQRT(Z0*USTAR(I,J)*RVISC))/USTAR(I,J)
+                 WGHT=AKMS(I,J)*ZU*RVISC
+                 RWGH=WGHT/(WGHT+1.)
+                 UZ0(I,J)=(ULOW*RWGH+UZ0(I,J))*0.5
+                 VZ0(I,J)=(VLOW*RWGH+VZ0(I,J))*0.5
+!
+                 ZT=FZT1*ZU
+                 ZQ=FZQ1*ZT
+                 WGHTT=AKHS(I,J)*ZT*RTVISC
+                 WGHTQ=AKHS(I,J)*ZQ*RQVISC
+#if ( NMM_CORE == 1 )
+                 if(NTSD+1>1) then
+#else
+                 IF(NTSD>1)THEN
+#endif
+             THZ0(I,J)=((WGHTT*THLOW+THSK(I,J))/(WGHTT+1.)+THZ0(I,J))*0.5
+             QZ0(I,J)=((WGHTQ*QLOW+QSFC(I,J))/(WGHTQ+1.)+QZ0(I,J))*0.5
+                 ELSE
+                   THZ0(I,J)=(WGHTT*THLOW+THSK(I,J))/(WGHTT+1.)
+                   QZ0(I,J)=(WGHTQ*QLOW+QSFC(I,J))/(WGHTQ+1.)
+                 ENDIF
+               ENDIF
+!
+               IF(USTAR(I,J)>=USTR.AND.USTAR(I,J)<USTC)THEN
+                 ZU=Z0
+                 UZ0(I,J)=0.
+                 VZ0(I,J)=0.
+                 ZT=FZT2*SQRT(SQRT(Z0*USTAR(I,J)*RVISC))/USTAR(I,J)
+                 ZQ=FZQ2*ZT
+                 WGHTT=AKHS(I,J)*ZT*RTVISC
+                 WGHTQ=AKHS(I,J)*ZQ*RQVISC
+!
+#if ( NMM_CORE == 1 )
+                 if(NTSD+1>1) then
+#else
+                 IF(NTSD>1)THEN
+#endif
+              THZ0(I,J)=((WGHTT*THLOW+THSK(I,J))/(WGHTT+1.)+THZ0(I,J))*0.5
+              QZ0(I,J)=((WGHTQ*QLOW+QSFC(I,J))/(WGHTQ+1.)+QZ0(I,J))*0.5
+                 ELSE
+                   THZ0(I,J)=(WGHTT*THLOW+THSK(I,J))/(WGHTT+1.)
+                   QZ0(I,J)=(WGHTQ*QLOW+QSFC(I,J))/(WGHTQ+1.)
+                 ENDIF
+               ENDIF
+             ELSE
+               ZU=Z0
+               UZ0(I,J)=0.
+               VZ0(I,J)=0.
+!
+               ZT=Z0
+               THZ0(I,J)=THSK(I,J)
+               ZQ=Z0
+               QZ0(I,J)=QSFC(I,J)
+             ENDIF
+!CSD subtract off ocean currents from surface velocity estimates.
+             UZ0(I,J)=UZ0(I,J)-UOCE(I,J)
+             VZ0(I,J)=VZ0(I,J)-VOCE(I,J)
+!***  LAND POINTS
+           ELSE
+             ZU=Z0
+             UZ0(I,J)=0.
+             VZ0(I,J)=0.
+!
+             ZT=ZU*ZTFC
+             THZ0(I,J)=THSK(I,J)
+             ZQ=ZT
+             QZ0(I,J)=QSFC(I,J)
+           ENDIF  !  End of land/sea branch
+        ENDDO
+      ENDDO
+! end of section from module_sf_myjsfc.F! NP
+      ENDIF ! End of "IF(.not.MYJSFC)" condition
+!
 !
 !----------------------------------------------------------------------
 !
@@ -1175,7 +1348,7 @@
 !   *                LEVEL 2.5 DIFFUSION COEFFICIENTS                *
 !   *                                                                *
 !   ******************************************************************
-     &(LMH,LMXL,GM,GH,EL,T,Q2,Z,AKM,AKH                                &
+     &(LMH,LMXL,GM,GH,EL,T,Q2,Z,AKM,AKH,S_M,S_H                       &  !CSD Nperlin 4SRFCCLAY4
      &,IDS,IDE,JDS,JDE,KDS,KDE                                         &
      &,IMS,IME,JMS,JME,KMS,KME                                         &
      &,ITS,ITE,JTS,JTE,KTS,KTE,PRINT_DIAG)   ! debug
@@ -1195,6 +1368,7 @@
       REAL,DIMENSION(KTS:KTE+1),INTENT(IN) :: Z
 !
       REAL,DIMENSION(KTS:KTE-1),INTENT(OUT) :: AKH,AKM
+      REAL,DIMENSION(KTS:KTE-1),INTENT(OUT) :: S_H,S_M
 !----------------------------------------------------------------------
 !***
 !***  LOCAL VARIABLES
@@ -1264,6 +1438,8 @@
         ELQDZ=ELL*Q1L*RDZ
         AKM(K)=ELQDZ*ESM
         AKH(K)=ELQDZ*ESH
+        S_M(K)=ESM
+        S_H(K)=ESH
 !----------------------------------------------------------------------
       ENDDO
 !----------------------------------------------------------------------

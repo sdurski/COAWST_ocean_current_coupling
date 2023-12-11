@@ -135,3 +135,11 @@ A comparison of the kinetic energy reduction with and without inclusion of the s
 
 
 -----------------------------------------------myj--------------------------------------------------------------------
+Modifications for the myj scheme were more extensive than for the other schemes because Natalie Perlin's modification of WRF to make the scheme compatible with the sfclay surface layer parameterization also needed to be implemented in a more current version of WRF. This entailed modification to numerous routines because the myj scheme needed a number of surface scheme variables that were calculated in module_sf_myjsfc but not module_sf_sfclay. See the git commit for all the routines that have been modified.
+
+The MYJ scheme is distinct in a couple ways in terms of adding the surface current coupling. It calculates a viscous sublayer estimate of velocity at the interface and calculates a mixing coefficient rather than use a boundary stress. Because of this modification for surface current coupling doesn't follow directly the approach from Lemarie's note.  In order to add the effect of ocean currents I've subtracted the ocean current from the UZO and VZO terms calculateg in module_bl_myjpbl as follows 
+
+             UZ0(I,J)=UZ0(I,J)-UOCE(I,J)
+             VZ0(I,J)=VZ0(I,J)-VOCE(I,J)
+
+UZO is then passed to the vdifv solver with the effect of the surface current coupling. There are however some ambiguities to this that I'm exploring. UZO is calculated from ULOW, along with thermodynamic characteristics of the lowest model grid level (LOWLYR). U(LMH)[where LMH = KTE-LOWLYR+1 and LOWLYR==1, as the indexing is flipped for this scheme.] is also passed to the solver. So I am next (below) going to explore the impact of 1) subtracting UOCE from ULOW (in the estimate of UZO as an alternative to subtracting off UZO-UOCE and 2) passing UOCE and VOCE to VDIFV to be subtracted from U(LMH) where appropriate in the solver. 

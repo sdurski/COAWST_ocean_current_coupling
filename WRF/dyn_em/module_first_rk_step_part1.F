@@ -1119,6 +1119,9 @@ BENCH_START(pbl_driver_tim)
      &        ,DX2D=grid%dx2d     ,AREA2D=grid%area2d                               &
      &        ,DZ8W=dz8w          ,HPBL_HOLD=hpbl_hold                              &
      &        ,EXCH_H=grid%exch_h     ,EXCH_M=grid%exch_m                           &
+     &        ,EXCH_Q=grid%exch_q                                                   & !CSD Nperlin 4SFCLAY1
+     &        ,GH_PBL=grid%gh_pbl, N2_PBL = grid%n2_pbl                             & !CSD Nperlin 4SFCLAY1
+     &        ,SM_PBL=grid%sm_pbl, SH_PBL = grid%sh_pbl                             & !CSD Nperlin 4SFCLAY1
      &        ,FM=grid%fm         ,FHH=grid%fh                                      &
      &        ,F=grid%f  ,GRDFLX=grid%grdflx      &
      &        ,GZ1OZ0=gz1oz0      ,HFX=grid%hfx            ,HT=grid%ht              &

@@ -1040,6 +1040,11 @@ state   real   pep_adv        ikjftb  scalar      1         -      i0rusdf=(bdy_
 # MYJ PBL variables; GBM PBL: EXCH_H, EXCH_M
 state    real   EXCH_H          ikj     misc        1         Z     r        "EXCH_H"               "SCALAR EXCHANGE COEFFICIENTS "                "m2 s-1"
 state    real   EXCH_M          ikj     misc        1         Z     r        "EXCH_M"               "EXCHANGE COEFFICIENTS "                       "m2 s-1"
+state    real   EXCH_Q          ikj     misc        1         Z     r         "EXCH_Q"               "Q EXCHANGE COEFFICIENTS "                      "m2 s-1"
+state    real   GH_PBL          ikj     misc        1         Z     r         "GH_PBL"               "GH FOR MYJPBL "                      ".."
+state    real   N2_PBL          ikj     misc        1         Z     r         "N2_PBL"               "N2 FOR MYJPBL "                      "s-2"
+state    real   SM_PBL          ikj     misc        1         Z     r         "SM_PBL"               "SM FOR MYJPBL"                      "none"
+state    real   SH_PBL          ikj     misc        1         Z     r         "SH_PBL"               "SH FOR MYJPBL "
 state    real  CT               ij      misc        1         -     r        "CT"                    "COUNTERGRADIENT TERM"    "K"
 state   real   THZ0             ij     misc        1         -      r        "THZ0"                  "POTENTIAL TEMPERATURE AT ZNT"                 "K"
 state    real  Z0               ij     misc        1         -      r        "Z0"                    "Background ROUGHNESS LENGTH"                  "m"

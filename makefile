@@ -322,7 +322,7 @@ ifdef EXEC
     BIN ?= $(BINDIR)/coawstG_suvN
  else
    ifdef USE_MPI
-     BIN ?= $(BINDIR)/coawstM_suvNuw
+     BIN ?= $(BINDIR)/coawstM_suvN
   else
     ifdef USE_OpenMP
       BIN ?= $(BINDIR)/coawstO_suvN
