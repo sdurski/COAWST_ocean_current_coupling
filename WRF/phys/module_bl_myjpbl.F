@@ -563,8 +563,9 @@
 !
            SEAMASK=XLAND(I,J)-1.
            PSFC=PINT(I,LOWLYR(I,J),J)
-           ULOW=U(I,LOWLYR(I,J),J)
-           VLOW=V(I,LOWLYR(I,J),J)
+!CSD Subtract ocean currents from lowest layer velocity 
+           ULOW=U(I,LOWLYR(I,J),J) - UOCE(I,J)
+           VLOW=V(I,LOWLYR(I,J),J) - VOCE(I,J)
            RATIOMX=QV(I,LOWLYR(I,J),J)
            QLOW=RATIOMX/(1.+RATIOMX)
            THLOW = TH(I,LOWLYR(I,J),J)

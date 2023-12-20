@@ -18,7 +18,7 @@
  interval_seconds                    = 21600
  input_from_file                     = .true.,.true.,.true.,
  history_interval                    = 7200,  7200,   7200,
- history_outname                     = "CCS_output/wrf_cpld_CCS8_myj_d<domain>_<date>"
+ history_outname                     = "CCS_output/wrf_cpld_CCS8_myjN2_d<domain>_<date>"
  frames_per_outfile                  = 8 ,   8, 1000,
  restart                             = .false.,
  restart_interval                    = 43200,
